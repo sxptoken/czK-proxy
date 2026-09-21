@@ -1,18 +1,27 @@
 {
   "version": 2,
-  "functions": {
-    "search.js": {
-      "runtime": "nodejs22.x"
+  "builds": [
+    {
+      "src": "search.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/search",
-      "dest": "/search.js"
+      "dest": "search.js"
+    },
+    {
+      "src": "/",
+      "dest": "index.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "$1"
     }
   ]
 }
