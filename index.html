@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>czX Search</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <a class="logo" href="/">czX</a>
+
+    <form id="searchForm">
+      <input id="searchInput" type="search" placeholder="Search the web..." autocomplete="off" autofocus>
+      <button type="submit">Search</button>
+    </form>
+
+    <div id="status"></div>
+    <section id="results"></section>
+  </main>
+
+  <script>
+    const form = document.getElementById("searchForm");
+    const input = document.getElementById("searchInput");
+    const status = document.getElementById("status");
+    const results = document.getElementById("results");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const q = input.value.trim();
+      if (!q) return;
+
+      status.textContent = "Searching...";
+      results.innerHTML = "";
+
+      try {
+        const response = await fetch("/api/search?q=" + encodeURIComponent(q));
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Search failed.");
+        }
+
+        if (!data.results.length) {
+          status.textContent = "No results found.";
+          return;
+        }
+
+        status.textContent = data.results.length + " results";
+        results.innerHTML = data.results.map(result => {
+          const article = document.createElement("article");
+
+          const title = document.createElement("a");
+          title.className = "title";
+          title.href = result.url;
+          title.target = "_blank";
+          title.rel = "noopener noreferrer";
+          title.textContent = result.title;
+
+          const url = document.createElement("div");
+          url.className = "url";
+          url.textContent = result.url;
+
+          const snippet = document.createElement("p");
+          snippet.textContent = result.snippet || "";
+
+          article.append(title, url, snippet);
+          return article.outerHTML;
+        }).join("");
+      } catch (error) {
+        console.error(error);
+        status.textContent = "";
+        results.innerHTML = '<div class="error">Search is temporarily unavailable. Please try again.</div>';
+      }
+    });
+  </script>
+</body>
+</html>
