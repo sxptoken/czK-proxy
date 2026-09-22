@@ -6,6 +6,10 @@
       "dest": "/api/search.js"
     },
     {
+      "src": "/api/proxy",
+      "dest": "/api/proxy.js"
+    },
+    {
       "handle": "filesystem"
     },
     {
