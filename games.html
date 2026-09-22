@@ -75,9 +75,8 @@
             src="about:blank"
             loading="lazy"
             allow="autoplay; fullscreen"
-            referrerpolicy="no-referrer"
           ></iframe>
-          <div class="game-note">The game is loaded from its original hosted page.</div>
+          <div class="game-note">Basket Random is loaded through czX so it can run inside the site.</div>
         </div>
       </div>
     </section>
@@ -91,7 +90,7 @@
     const gamePlayer=document.getElementById("gamePlayer");
     const gameFrame=document.getElementById("gameFrame");
     const closeGame=document.getElementById("closeGame");
-    const basketRandomUrl="https://mindsetpro.github.io/Basket-Random/";
+    const basketRandomUrl="/api/game-proxy?path=index.html";
 
     function openBasketRandom(){
       gameFrame.src=basketRandomUrl;
