@@ -6,94 +6,65 @@ module.exports = async (req, res) => {
     return res.status(400).json({ ok: false, error: "Missing search query." });
   }
 
-  const headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml"
-  };
-
   try {
-    let html = "";
-    let lastError = null;
+    // Vercel can have trouble reaching DuckDuckGo directly. Jina Reader
+    // fetches the DuckDuckGo HTML page server-side and returns readable text.
+    const target =
+      "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
+    const readerUrl = "https://r.jina.ai/" + target;
 
-    // Try DuckDuckGo's HTML endpoint first, then its lightweight endpoint.
-    const endpoints = [
-      "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q),
-      "https://lite.duckduckgo.com/lite/?q=" + encodeURIComponent(q)
-    ];
-
-    for (const endpoint of endpoints) {
-      try {
-        const response = await fetch(endpoint, {
-          headers,
-          redirect: "follow"
-        });
-
-        if (response.ok) {
-          html = await response.text();
-          if (html && html.length > 500) break;
-        } else {
-          lastError = new Error("DuckDuckGo HTTP " + response.status);
-        }
-      } catch (err) {
-        lastError = err;
+    const response = await fetch(readerUrl, {
+      headers: {
+        "Accept": "text/plain",
+        "User-Agent": "czX-Proxy/1.0"
       }
+    });
+
+    if (!response.ok) {
+      throw new Error("Search fetch HTTP " + response.status);
     }
 
-    if (!html) {
-      throw lastError || new Error("DuckDuckGo returned no data");
-    }
-
+    const text = await response.text();
     const results = [];
     const seen = new Set();
 
-    function decode(value) {
-      return value
-        .replace(/&amp;/g, "&")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&#x27;/g, "'")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/<[^>]*>/g, "")
-        .trim();
-    }
-
-    // Standard DuckDuckGo HTML results.
-    const standard = /<a[^>]*class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+    // Jina returns DuckDuckGo's page as markdown/text. Extract result links.
+    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
     let match;
 
-    while ((match = standard.exec(html)) && results.length < 10) {
-      let target = match[1];
-      const title = decode(match[2]);
+    while ((match = linkRegex.exec(text)) && results.length < 10) {
+      const title = match[1].replace(/\\([()[\]])/g, "$1").trim();
+      let targetUrl = match[2].trim();
 
-      const uddg = target.match(/[?&]uddg=([^&]+)/i);
-      if (uddg) {
-        try { target = decodeURIComponent(uddg[1]); } catch (_) {}
+      if (
+        !title ||
+        !/^https?:\/\//i.test(targetUrl) ||
+        /duckduckgo\.com/i.test(targetUrl) ||
+        seen.has(targetUrl)
+      ) {
+        continue;
       }
 
-      if (target.startsWith("//")) target = "https:" + target;
-
-      if (/^https?:\/\//i.test(target) && title && !seen.has(target)) {
-        seen.add(target);
-        results.push({ title, url: target, snippet: "" });
+      // Skip obvious navigation links.
+      if (/^(Images|Videos|News|Maps|All|Settings|DuckDuckGo)$/i.test(title)) {
+        continue;
       }
+
+      seen.add(targetUrl);
+      results.push({
+        title,
+        url: targetUrl,
+        snippet: ""
+      });
     }
 
-    // DuckDuckGo Lite uses result-link anchors.
     if (!results.length) {
-      const lite = /<a[^>]*class=["'][^"']*result-link[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-
-      while ((match = lite.exec(html)) && results.length < 10) {
-        let target = match[1];
-        const title = decode(match[2]);
-
-        if (target.startsWith("//")) target = "https:" + target;
-
-        if (/^https?:\/\//i.test(target) && title && !seen.has(target)) {
-          seen.add(target);
-          results.push({ title, url: target, snippet: "" });
-        }
-      }
+      return res.status(200).json({
+        ok: true,
+        query: q,
+        results: [],
+        message: "DuckDuckGo returned no readable results."
+      });
     }
 
     res.setHeader("Cache-Control", "no-store");
@@ -103,11 +74,10 @@ module.exports = async (req, res) => {
       results
     });
   } catch (error) {
-    console.error("czX DuckDuckGo error:", error);
-
+    console.error("czX search error:", error);
     return res.status(502).json({
       ok: false,
-      error: "DuckDuckGo could not be reached from the Vercel server."
+      error: "The search service could not be reached from Vercel."
     });
   }
 };
