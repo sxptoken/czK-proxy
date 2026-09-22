@@ -10,9 +10,8 @@
 <body>
   <header class="nav">
     <a class="logo" href="/" aria-label="czX home">czX</a>
-
     <div class="nav-actions">
-      <a class="youtube-button" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="Open YouTube">
+      <a class="youtube-button" href="/youtube.html" aria-label="Open YouTube">
         <span class="youtube-icon">▶</span>
         <span>YouTube</span>
       </a>
@@ -59,103 +58,49 @@
   </div>
 
   <script>
-    const settingsButton = document.getElementById("settingsButton");
-    const closeSettings = document.getElementById("closeSettings");
-    const overlay = document.getElementById("settingsOverlay");
-    const wallpaperFile = document.getElementById("wallpaperFile");
-    const clearWallpaper = document.getElementById("clearWallpaper");
-    const panicKey = document.getElementById("panicKey");
-    const panicUrl = document.getElementById("panicUrl");
-    const savePanic = document.getElementById("savePanic");
-    const savedMessage = document.getElementById("savedMessage");
+    const settingsButton=document.getElementById("settingsButton");
+    const closeSettings=document.getElementById("closeSettings");
+    const overlay=document.getElementById("settingsOverlay");
+    const wallpaperFile=document.getElementById("wallpaperFile");
+    const clearWallpaper=document.getElementById("clearWallpaper");
+    const panicKey=document.getElementById("panicKey");
+    const panicUrl=document.getElementById("panicUrl");
+    const savePanic=document.getElementById("savePanic");
+    const savedMessage=document.getElementById("savedMessage");
 
-    function openSettings() {
-      overlay.hidden = false;
-      panicKey.value = localStorage.getItem("czxPanicKey") || "";
-      panicUrl.value = localStorage.getItem("czxPanicUrl") || "";
-      setTimeout(() => panicKey.focus(), 0);
-    }
+    function openSettings(){overlay.hidden=false;panicKey.value=localStorage.getItem("czxPanicKey")||"";panicUrl.value=localStorage.getItem("czxPanicUrl")||"";setTimeout(()=>panicKey.focus(),0)}
+    function closeSettingsPanel(){overlay.hidden=true}
+    settingsButton.addEventListener("click",openSettings);
+    closeSettings.addEventListener("click",closeSettingsPanel);
+    overlay.addEventListener("click",e=>{if(e.target===overlay)closeSettingsPanel()});
 
-    function closeSettingsPanel() {
-      overlay.hidden = true;
-    }
-
-    settingsButton.addEventListener("click", openSettings);
-    closeSettings.addEventListener("click", closeSettingsPanel);
-
-    overlay.addEventListener("click", (event) => {
-      if (event.target === overlay) closeSettingsPanel();
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape"&&!overlay.hidden){closeSettingsPanel();return}
+      const key=localStorage.getItem("czxPanicKey"),url=localStorage.getItem("czxPanicUrl");
+      if(key&&url&&e.key.toLowerCase()===key.toLowerCase()&&document.activeElement.tagName!=="INPUT"&&document.activeElement.tagName!=="TEXTAREA")window.location.href=url;
     });
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && !overlay.hidden) {
-        closeSettingsPanel();
-        return;
-      }
-
-      const savedKey = localStorage.getItem("czxPanicKey");
-      const savedUrl = localStorage.getItem("czxPanicUrl");
-
-      if (
-        savedKey &&
-        savedUrl &&
-        event.key.toLowerCase() === savedKey.toLowerCase() &&
-        document.activeElement.tagName !== "INPUT" &&
-        document.activeElement.tagName !== "TEXTAREA"
-      ) {
-        window.location.href = savedUrl;
-      }
-    });
-
-    wallpaperFile.addEventListener("change", () => {
-      const file = wallpaperFile.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith("image/")) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        localStorage.setItem("czxWallpaper", reader.result);
-        document.body.style.backgroundImage = `url("${reader.result}")`;
-        document.body.classList.add("custom-wallpaper");
-      };
+    wallpaperFile.addEventListener("change",()=>{
+      const file=wallpaperFile.files[0];
+      if(!file||!file.type.startsWith("image/"))return;
+      const reader=new FileReader();
+      reader.onload=()=>{localStorage.setItem("czxWallpaper",reader.result);document.body.style.backgroundImage=`url("${reader.result}")`;document.body.classList.add("custom-wallpaper")};
       reader.readAsDataURL(file);
     });
 
-    clearWallpaper.addEventListener("click", () => {
-      localStorage.removeItem("czxWallpaper");
-      document.body.style.backgroundImage = "";
-      document.body.classList.remove("custom-wallpaper");
-      wallpaperFile.value = "";
+    clearWallpaper.addEventListener("click",()=>{
+      localStorage.removeItem("czxWallpaper");document.body.style.backgroundImage="";document.body.classList.remove("custom-wallpaper");wallpaperFile.value="";
     });
 
-    savePanic.addEventListener("click", () => {
-      const key = panicKey.value.trim().slice(0, 1);
-      const url = panicUrl.value.trim();
-
-      if (!key || !url) {
-        savedMessage.textContent = "Enter both a key and a link.";
-        return;
-      }
-
-      try {
-        const parsed = new URL(url);
-        if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
-      } catch {
-        savedMessage.textContent = "Enter a valid http or https link.";
-        return;
-      }
-
-      localStorage.setItem("czxPanicKey", key);
-      localStorage.setItem("czxPanicUrl", url);
-      savedMessage.textContent = `Saved: ${key.toUpperCase()} → ${url}`;
+    savePanic.addEventListener("click",()=>{
+      const key=panicKey.value.trim().slice(0,1),url=panicUrl.value.trim();
+      if(!key||!url){savedMessage.textContent="Enter both a key and a link.";return}
+      try{const parsed=new URL(url);if(!["http:","https:"].includes(parsed.protocol))throw new Error()}catch{savedMessage.textContent="Enter a valid http or https link.";return}
+      localStorage.setItem("czxPanicKey",key);localStorage.setItem("czxPanicUrl",url);savedMessage.textContent=`Saved: ${key.toUpperCase()} → ${url}`;
     });
 
-    const savedWallpaper = localStorage.getItem("czxWallpaper");
-    if (savedWallpaper) {
-      document.body.style.backgroundImage = `url("${savedWallpaper}")`;
-      document.body.classList.add("custom-wallpaper");
-    }
+    const savedWallpaper=localStorage.getItem("czxWallpaper");
+    if(savedWallpaper){document.body.style.backgroundImage=`url("${savedWallpaper}")`;document.body.classList.add("custom-wallpaper")}
   </script>
 </body>
 </html>
