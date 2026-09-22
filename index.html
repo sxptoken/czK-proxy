@@ -115,12 +115,6 @@
           const snippet = document.createElement("p");
           snippet.textContent = item.snippet || "";
 
-          // Keep navigation inside czX for future proxy navigation.
-          title.addEventListener("click", (event) => {
-            event.preventDefault();
-            window.location.href = "/?url=" + encodeURIComponent(item.url);
-          });
-
           article.append(title, url, snippet);
           results.appendChild(article);
         });
