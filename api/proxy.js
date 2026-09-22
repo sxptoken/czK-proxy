@@ -18,11 +18,20 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // YouTube watch pages are handled with the official embed player.
-    if (targetUrl.hostname === "www.youtube.com" && targetUrl.pathname === "/watch") {
-      const videoId = targetUrl.searchParams.get("v");
+    // YouTube video links are handled with the official embed player.
+    // Supports youtube.com/watch, youtube.com/shorts and youtu.be links.
+    let youtubeVideoId = null;
 
-      if (videoId && /^[A-Za-z0-9_-]{6,20}$/.test(videoId)) {
+    if ((targetUrl.hostname === "www.youtube.com" || targetUrl.hostname === "youtube.com") && targetUrl.pathname === "/watch") {
+      youtubeVideoId = targetUrl.searchParams.get("v");
+    } else if ((targetUrl.hostname === "www.youtube.com" || targetUrl.hostname === "youtube.com") && targetUrl.pathname.startsWith("/shorts/")) {
+      youtubeVideoId = targetUrl.pathname.split("/")[2];
+    } else if (targetUrl.hostname === "youtu.be") {
+      youtubeVideoId = targetUrl.pathname.split("/")[1];
+    }
+
+    if (youtubeVideoId && /^[A-Za-z0-9_-]{6,20}$/.test(youtubeVideoId)) {
+      const videoId = youtubeVideoId;
         const embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=0&rel=0";
         const page = `<!DOCTYPE html>
 <html lang="en">
