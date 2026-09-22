@@ -8,87 +8,142 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/">czX</a>
-    <div class="secure">FREE WEB PROXY</div>
+    <a class="brand" href="/" onclick="return goHome()">czX</a>
+    <div class="secure">● DUCKDUCKGO</div>
   </header>
 
-  <main class="hero">
+  <main class="hero" id="home">
     <div class="badge">● ONLINE</div>
     <h1>Browse the web freely</h1>
-    <p class="subtitle">Enter a website address or search the web through DuckDuckGo.</p>
+    <p class="subtitle">Search DuckDuckGo through czX without leaving the czX website.</p>
 
     <form id="proxyForm" class="search-box">
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Enter a URL or search query"
-        autocomplete="off"
-        autofocus
-      >
-      <button type="submit">GO</button>
+      <input id="searchInput" type="text" placeholder="Search the web..." autocomplete="off" autofocus>
+      <button type="submit">SEARCH</button>
     </form>
 
     <div class="quick">
-      <span>Quick links</span>
-      <button data-query="site:duckduckgo.com DuckDuckGo">DuckDuckGo</button>
+      <span>Quick searches</span>
+      <button data-query="DuckDuckGo">DuckDuckGo</button>
       <button data-query="Google">Google</button>
       <button data-query="YouTube">YouTube</button>
       <button data-query="Wikipedia">Wikipedia</button>
     </div>
-
-    <section class="info">
-      <div>
-        <strong>Private browsing</strong>
-        <p>Searches are sent through the czX server instead of opening a new window.</p>
-      </div>
-      <div>
-        <strong>DuckDuckGo search</strong>
-        <p>Search queries use DuckDuckGo and open in the same browser tab.</p>
-      </div>
-      <div>
-        <strong>No setup</strong>
-        <p>No extension or application is required.</p>
-      </div>
-    </section>
   </main>
 
-  <footer>czX Proxy · Search powered by DuckDuckGo</footer>
+  <main class="results-page" id="resultsPage" hidden>
+    <form id="resultsForm" class="search-box compact">
+      <a class="results-logo" href="/" onclick="return goHome()">czX</a>
+      <input id="resultsInput" type="text" placeholder="Search DuckDuckGo..." autocomplete="off">
+      <button type="submit">SEARCH</button>
+    </form>
+    <div id="status"></div>
+    <section id="results"></section>
+  </main>
+
+  <footer>czX Proxy · DuckDuckGo results stay inside czX</footer>
 
   <script>
-    const form = document.getElementById("proxyForm");
+    const home = document.getElementById("home");
+    const resultsPage = document.getElementById("resultsPage");
     const input = document.getElementById("searchInput");
+    const resultsInput = document.getElementById("resultsInput");
+    const form = document.getElementById("proxyForm");
+    const resultsForm = document.getElementById("resultsForm");
+    const status = document.getElementById("status");
+    const results = document.getElementById("results");
 
-    function openSearch(value) {
-      const q = value.trim();
-      if (!q) return;
-
-      // Full URLs are opened directly. Everything else is a DuckDuckGo search.
-      let destination;
-      try {
-        const url = new URL(q);
-        if (url.protocol === "http:" || url.protocol === "https:") {
-          destination = url.href;
-        }
-      } catch (_) {}
-
-      if (!destination) {
-        destination = "https://duckduckgo.com/?q=" + encodeURIComponent(q);
-      }
-
-      // Same tab — no popup and no new browser window.
-      window.location.href = destination;
+    function goHome() {
+      history.pushState({}, "", "/");
+      resultsPage.hidden = true;
+      home.hidden = false;
+      input.focus();
+      return false;
     }
 
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      openSearch(input.value);
+    async function search(q, push = true) {
+      q = q.trim();
+      if (!q) return;
+
+      if (push) {
+        history.pushState({ q }, "", "/?q=" + encodeURIComponent(q));
+      }
+
+      home.hidden = true;
+      resultsPage.hidden = false;
+      resultsInput.value = q;
+      status.textContent = "Searching DuckDuckGo...";
+      results.innerHTML = "";
+
+      try {
+        const response = await fetch("/api/search?q=" + encodeURIComponent(q), {
+          headers: { "Accept": "application/json" }
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Search failed.");
+        }
+
+        if (!data.results.length) {
+          status.textContent = "No results found.";
+          return;
+        }
+
+        status.textContent = data.results.length + " DuckDuckGo results";
+        results.innerHTML = data.results.map((item) => {
+          const article = document.createElement("article");
+
+          const title = document.createElement("a");
+          title.className = "title";
+          title.href = item.url;
+          title.textContent = item.title;
+
+          const url = document.createElement("div");
+          url.className = "url";
+          url.textContent = item.url;
+
+          const snippet = document.createElement("p");
+          snippet.textContent = item.snippet || "";
+
+          // Keep navigation inside czX for future proxy navigation.
+          title.addEventListener("click", (event) => {
+            event.preventDefault();
+            window.location.href = "/?url=" + encodeURIComponent(item.url);
+          });
+
+          article.append(title, url, snippet);
+          return article;
+        });
+      } catch (error) {
+        console.error(error);
+        status.textContent = "";
+        results.innerHTML = '<div class="error">DuckDuckGo search could not be loaded. Please try again.</div>';
+      }
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      search(input.value);
+    });
+
+    resultsForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      search(resultsInput.value);
     });
 
     document.querySelectorAll("[data-query]").forEach((button) => {
-      button.addEventListener("click", () => {
-        openSearch(button.dataset.query);
-      });
+      button.addEventListener("click", () => search(button.dataset.query));
     });
+
+    window.addEventListener("popstate", () => {
+      const q = new URLSearchParams(location.search).get("q");
+      if (q) search(q, false);
+      else goHome();
+    });
+
+    const initialQ = new URLSearchParams(location.search).get("q");
+    if (initialQ) search(initialQ, false);
   </script>
 </body>
 </html>
