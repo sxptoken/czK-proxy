@@ -6,51 +6,62 @@ module.exports = async (req, res) => {
     return res.status(400).json({ ok: false, error: "Missing search query." });
   }
 
-  const apiKey = process.env.BRAVE_SEARCH_API_KEY;
-
-  if (!apiKey) {
-    return res.status(500).json({
-      ok: false,
-      error: "BRAVE_SEARCH_API_KEY is not configured in Vercel."
-    });
-  }
-
   try {
-    const searchUrl =
-      "https://api.search.brave.com/res/v1/web/search?" +
-      new URLSearchParams({
-        q,
-        count: "10",
-        country: "us",
-        search_lang: "en",
-        safesearch: "moderate"
-      }).toString();
+    // Free relay: Jina Reader fetches DuckDuckGo's HTML results and
+    // converts the page into readable text/Markdown for the Vercel function.
+    const target = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
+    const readerUrl = "https://r.jina.ai/" + target;
 
-    const response = await fetch(searchUrl, {
+    const response = await fetch(readerUrl, {
       headers: {
-        "Accept": "application/json",
-        "X-Subscription-Token": apiKey
+        "Accept": "text/plain",
+        "User-Agent": "czX Search"
       }
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      console.error("Brave Search API error:", response.status, data);
+      console.error("DuckDuckGo relay error:", response.status);
       return res.status(502).json({
         ok: false,
-        error: "Brave Search API returned HTTP " + response.status + "."
+        error: "DuckDuckGo search could not be reached."
       });
     }
 
-    const results = (data.web?.results || [])
-      .slice(0, 10)
-      .map((item) => ({
-        title: item.title || "Untitled",
-        url: item.url,
-        snippet: item.description || ""
-      }))
-      .filter((item) => item.url);
+    const text = await response.text();
+    const results = [];
+    const seen = new Set();
+
+    // Jina commonly returns DuckDuckGo results as Markdown links.
+    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+    let match;
+
+    while ((match = linkRegex.exec(text)) && results.length < 10) {
+      const title = match[1].replace(/\\/g, "").trim();
+      const resultUrl = match[2].trim();
+
+      if (!title || !resultUrl || seen.has(resultUrl)) continue;
+      if (resultUrl.includes("duckduckgo.com")) continue;
+
+      seen.add(resultUrl);
+
+      let snippet = "";
+      const after = text.slice(match.index + match[0].length);
+      const nextLine = after.split("\n").find((line) => line.trim());
+
+      if (nextLine) {
+        snippet = nextLine
+          .replace(/^[-*#>\s]+/, "")
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+          .trim()
+          .slice(0, 300);
+      }
+
+      results.push({
+        title,
+        url: resultUrl,
+        snippet
+      });
+    }
 
     res.setHeader("Cache-Control", "no-store");
 
@@ -60,11 +71,11 @@ module.exports = async (req, res) => {
       results
     });
   } catch (error) {
-    console.error("czX Brave Search error:", error);
+    console.error("czX DuckDuckGo search error:", error);
 
     return res.status(502).json({
       ok: false,
-      error: "Brave Search could not be reached."
+      error: "DuckDuckGo search could not be reached."
     });
   }
 };
