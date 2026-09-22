@@ -5,91 +5,112 @@ module.exports = async (req, res) => {
     return res.status(400).json({ ok: false, error: "Missing search query." });
   }
 
-  const targets = [
-    "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q),
-    "https://lite.duckduckgo.com/lite/?q=" + encodeURIComponent(q)
-  ];
-
   try {
-    let response = null;
-    let html = "";
-
-    for (const target of targets) {
-      try {
-        const r = await fetch(target, {
-          redirect: "follow",
-          headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml"
-          }
-        });
-
-        if (r.ok) {
-          const body = await r.text();
-          if (body && body.length > 500) {
-            response = r;
-            html = body;
-            break;
-          }
-        }
-      } catch (e) {
-        console.error("Search provider attempt failed:", e);
-      }
-    }
-
-    if (!response || !html) {
-      throw new Error("No DuckDuckGo search response");
-    }
-
     const results = [];
 
-    // DuckDuckGo HTML version.
-    const htmlRegex = /<a[^>]*class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-    let match;
+    // DuckDuckGo's public Instant Answer endpoint does not require an API key.
+    try {
+      const ddgUrl =
+        "https://api.duckduckgo.com/?q=" +
+        encodeURIComponent(q) +
+        "&format=json&no_html=1&skip_disambig=1";
 
-    while ((match = htmlRegex.exec(html)) && results.length < 10) {
-      let url = decode(match[1]);
-      const title = clean(match[2]);
+      const response = await fetch(ddgUrl, {
+        headers: { "User-Agent": "czX Search/1.0" }
+      });
 
-      if (url.startsWith("//")) url = "https:" + url;
-      url = unwrap(url);
+      if (response.ok) {
+        const data = await response.json();
 
-      if (title && /^https?:\/\//i.test(url)) {
-        const nearby = html.slice(match.index, match.index + 5000);
-        const snippetMatch =
-          nearby.match(/class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\/[^>]+>/i);
+        if (data.AbstractURL && data.AbstractText) {
+          results.push({
+            title: data.Heading || q,
+            url: data.AbstractURL,
+            snippet: data.AbstractText
+          });
+        }
 
-        results.push({
-          title,
-          url,
-          snippet: snippetMatch ? clean(snippetMatch[1]) : ""
+        for (const item of data.RelatedTopics || []) {
+          if (results.length >= 10) break;
+
+          if (item.FirstURL && item.Text) {
+            results.push({
+              title: item.Text.split(" - ")[0].trim(),
+              url: item.FirstURL,
+              snippet: item.Text
+            });
+          } else if (Array.isArray(item.Topics)) {
+            for (const sub of item.Topics) {
+              if (results.length >= 10) break;
+              if (sub.FirstURL && sub.Text) {
+                results.push({
+                  title: sub.Text.split(" - ")[0].trim(),
+                  url: sub.FirstURL,
+                  snippet: sub.Text
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("DuckDuckGo API failed:", error);
+    }
+
+    // Reliable no-key fallback using Wikipedia's public search API.
+    if (results.length < 3) {
+      try {
+        const wikiUrl =
+          "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" +
+          encodeURIComponent(q) +
+          "&srlimit=10&format=json&origin=*";
+
+        const response = await fetch(wikiUrl, {
+          headers: { "User-Agent": "czX Search/1.0" }
         });
+
+        if (response.ok) {
+          const data = await response.json();
+
+          for (const item of data.query?.search || []) {
+            if (results.length >= 10) break;
+
+            const snippet = String(item.snippet || "")
+              .replace(/<[^>]+>/g, "")
+              .replace(/&quot;/g, '"')
+              .replace(/&amp;/g, "&");
+
+            results.push({
+              title: item.title,
+              url:
+                "https://en.wikipedia.org/wiki/" +
+                encodeURIComponent(item.title.replace(/ /g, "_")),
+              snippet
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Wikipedia fallback failed:", error);
       }
     }
 
-    // DuckDuckGo Lite version fallback.
-    if (!results.length) {
-      const liteRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-      while ((match = liteRegex.exec(html)) && results.length < 10) {
-        let url = decode(match[1]);
-        const title = clean(match[2]);
+    // Remove duplicate URLs.
+    const unique = [];
+    const seen = new Set();
 
-        if (url.startsWith("//")) url = "https:" + url;
-        url = unwrap(url);
-
-        if (
-          title &&
-          url &&
-          /^https?:\/\//i.test(url) &&
-          !/duckduckgo\.com/i.test(url)
-        ) {
-          results.push({ title, url, snippet: "" });
-        }
+    for (const item of results) {
+      if (!seen.has(item.url)) {
+        seen.add(item.url);
+        unique.push(item);
       }
     }
 
     res.setHeader("Cache-Control", "no-store");
-    return res.status(200).json({ ok: true, query: q, results });
+    return res.status(200).json({
+      ok: true,
+      query: q,
+      results: unique.slice(0, 10)
+    });
   } catch (error) {
     console.error("Search error:", error);
     return res.status(502).json({
@@ -98,36 +119,3 @@ module.exports = async (req, res) => {
     });
   }
 };
-
-function clean(value) {
-  return decode(value)
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function decode(value) {
-  return value
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;|&#39;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
-}
-
-function unwrap(url) {
-  try {
-    if (url.startsWith("/l/?")) {
-      const u = new URL("https://html.duckduckgo.com" + url);
-      return u.searchParams.get("uddg")
-        ? decodeURIComponent(u.searchParams.get("uddg"))
-        : url;
-    }
-    if (url.includes("uddg=")) {
-      const u = new URL(url);
-      const real = u.searchParams.get("uddg");
-      if (real) return decodeURIComponent(real);
-    }
-  } catch {}
-  return url;
-}
