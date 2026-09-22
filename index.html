@@ -10,7 +10,7 @@
 <body>
   <header class="nav">
     <a class="logo" href="/" aria-label="czX home">czX</a>
-    <span class="status">czX</span>
+    <button class="settings-button" id="settingsButton" type="button" aria-label="Open settings">⚙</button>
   </header>
 
   <main class="page">
@@ -20,5 +20,135 @@
   </main>
 
   <footer>czX</footer>
+
+  <div class="settings-overlay" id="settingsOverlay" hidden>
+    <section class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="settings-header">
+        <div>
+          <span class="settings-label">SETTINGS</span>
+          <h2 id="settingsTitle">Customize czX</h2>
+        </div>
+        <button class="close-button" id="closeSettings" type="button" aria-label="Close settings">×</button>
+      </div>
+
+      <div class="setting">
+        <label for="wallpaperFile">Wallpaper</label>
+        <p>Each person can set their own wallpaper. It is saved only in that browser.</p>
+        <input id="wallpaperFile" type="file" accept="image/*">
+        <div class="setting-row">
+          <button class="secondary-button" id="clearWallpaper" type="button">Clear wallpaper</button>
+        </div>
+      </div>
+
+      <div class="setting">
+        <label for="panicKey">Panic key</label>
+        <p>Press the chosen key to immediately open the saved link.</p>
+        <input id="panicKey" class="text-input" type="text" maxlength="1" placeholder="Example: P">
+        <input id="panicUrl" class="text-input" type="url" placeholder="https://example.com">
+        <button class="save-button" id="savePanic" type="button">Save panic key</button>
+        <span class="saved-message" id="savedMessage" aria-live="polite"></span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const settingsButton = document.getElementById("settingsButton");
+    const closeSettings = document.getElementById("closeSettings");
+    const overlay = document.getElementById("settingsOverlay");
+    const wallpaperFile = document.getElementById("wallpaperFile");
+    const clearWallpaper = document.getElementById("clearWallpaper");
+    const panicKey = document.getElementById("panicKey");
+    const panicUrl = document.getElementById("panicUrl");
+    const savePanic = document.getElementById("savePanic");
+    const savedMessage = document.getElementById("savedMessage");
+
+    function openSettings() {
+      overlay.hidden = false;
+      panicKey.value = localStorage.getItem("czxPanicKey") || "";
+      panicUrl.value = localStorage.getItem("czxPanicUrl") || "";
+      setTimeout(() => panicKey.focus(), 0);
+    }
+
+    function closeSettingsPanel() {
+      overlay.hidden = true;
+    }
+
+    settingsButton.addEventListener("click", openSettings);
+    closeSettings.addEventListener("click", closeSettingsPanel);
+
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) closeSettingsPanel();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !overlay.hidden) {
+        closeSettingsPanel();
+        return;
+      }
+
+      const savedKey = localStorage.getItem("czxPanicKey");
+      const savedUrl = localStorage.getItem("czxPanicUrl");
+
+      if (
+        savedKey &&
+        savedUrl &&
+        event.key.toLowerCase() === savedKey.toLowerCase() &&
+        document.activeElement.tagName !== "INPUT" &&
+        document.activeElement.tagName !== "TEXTAREA"
+      ) {
+        window.location.href = savedUrl;
+      }
+    });
+
+    wallpaperFile.addEventListener("change", () => {
+      const file = wallpaperFile.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        localStorage.setItem("czxWallpaper", reader.result);
+        document.body.style.backgroundImage = `url("${reader.result}")`;
+        document.body.classList.add("custom-wallpaper");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    clearWallpaper.addEventListener("click", () => {
+      localStorage.removeItem("czxWallpaper");
+      document.body.style.backgroundImage = "";
+      document.body.classList.remove("custom-wallpaper");
+      wallpaperFile.value = "";
+    });
+
+    savePanic.addEventListener("click", () => {
+      const key = panicKey.value.trim().slice(0, 1);
+      const url = panicUrl.value.trim();
+
+      if (!key || !url) {
+        savedMessage.textContent = "Enter both a key and a link.";
+        return;
+      }
+
+      try {
+        const parsed = new URL(url);
+        if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
+      } catch {
+        savedMessage.textContent = "Enter a valid http or https link.";
+        return;
+      }
+
+      localStorage.setItem("czxPanicKey", key);
+      localStorage.setItem("czxPanicUrl", url);
+      savedMessage.textContent = `Saved: ${key.toUpperCase()} → ${url}`;
+    });
+
+    const savedWallpaper = localStorage.getItem("czxWallpaper");
+    if (savedWallpaper) {
+      document.body.style.backgroundImage = `url("${savedWallpaper}")`;
+      document.body.classList.add("custom-wallpaper");
+    }
+  </script>
 </body>
 </html>
