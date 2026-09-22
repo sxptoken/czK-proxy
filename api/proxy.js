@@ -2,9 +2,7 @@ module.exports = async (req, res) => {
   const requestUrl = new URL(req.url || "/", "https://czx.local");
   const target = requestUrl.searchParams.get("url");
 
-  if (!target) {
-    return res.status(400).send("Missing url.");
-  }
+  if (!target) return res.status(400).send("Missing url.");
 
   let targetUrl;
   try {
@@ -18,22 +16,60 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // YouTube video links are handled with the official embed player.
-    // Supports youtube.com/watch, youtube.com/shorts and youtu.be links.
+    // Basket Random is a JavaScript game. A normal HTML rewrite proxy can
+    // break its game scripts/assets, so keep it inside czX with an iframe.
+    if (targetUrl.hostname === "basketrandomonline.github.io") {
+      const gameUrl = "https://basketrandomonline.github.io/";
+      const page = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>czX · Basket Random</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#08090d;color:#fff;font-family:Arial,sans-serif;overflow:hidden}
+.top{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#0d1016;border-bottom:1px solid #202530}
+.logo{color:#fff;text-decoration:none;font-size:24px;font-weight:900}
+.back{color:#aeb5c2;text-decoration:none;font-size:14px}
+.game{width:100%;height:calc(100vh - 58px);border:0;display:block;background:#000}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="logo" href="/">czX</a>
+  <a class="back" href="/">← Back</a>
+</div>
+<iframe class="game" src="${gameUrl}" title="Basket Random" allow="fullscreen; autoplay" allowfullscreen></iframe>
+</body>
+</html>`;
+
+      res.status(200);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      return res.send(page);
+    }
+
+    // YouTube video links use the official embed player.
     let youtubeVideoId = null;
 
-    if ((targetUrl.hostname === "www.youtube.com" || targetUrl.hostname === "youtube.com") && targetUrl.pathname === "/watch") {
+    if (
+      (targetUrl.hostname === "www.youtube.com" || targetUrl.hostname === "youtube.com") &&
+      targetUrl.pathname === "/watch"
+    ) {
       youtubeVideoId = targetUrl.searchParams.get("v");
-    } else if ((targetUrl.hostname === "www.youtube.com" || targetUrl.hostname === "youtube.com") && targetUrl.pathname.startsWith("/shorts/")) {
+    } else if (
+      (targetUrl.hostname === "www.youtube.com" || targetUrl.hostname === "youtube.com") &&
+      targetUrl.pathname.startsWith("/shorts/")
+    ) {
       youtubeVideoId = targetUrl.pathname.split("/")[2];
     } else if (targetUrl.hostname === "youtu.be") {
       youtubeVideoId = targetUrl.pathname.split("/")[1];
     }
 
     if (youtubeVideoId && /^[A-Za-z0-9_-]{6,20}$/.test(youtubeVideoId)) {
-      const videoId = youtubeVideoId;
-        const embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=0&rel=0";
-        const page = `<!DOCTYPE html>
+      const embedUrl = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=0&rel=0";
+      const page = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -58,11 +94,10 @@ iframe{width:100%;height:100%;border:0}
 </body>
 </html>`;
 
-        res.status(200);
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.setHeader("Cache-Control", "no-store");
-        return res.send(page);
-      }
+      res.status(200);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      return res.send(page);
     }
 
     const response = await fetch(targetUrl.href, {
@@ -85,7 +120,6 @@ iframe{width:100%;height:100%;border:0}
     let html = await response.text();
     const base = targetUrl.href;
 
-    // Keep normal links, forms, images, stylesheets and scripts pointed through czX.
     const proxy = (value) => {
       try {
         const absolute = new URL(value, base);
@@ -101,7 +135,6 @@ iframe{width:100%;height:100%;border:0}
       (full, start, value, end) => start + proxy(value) + end
     );
 
-    // Rewrite CSS url(...) references.
     html = html.replace(
       /url\((['"]?)([^'")]+)\1\)/gi,
       (full, quote, value) => {
@@ -110,7 +143,6 @@ iframe{width:100%;height:100%;border:0}
       }
     );
 
-    // Prevent the proxied page from escaping czX through a base tag.
     html = html.replace(/<base\b[^>]*>/gi, "");
     html = html.replace(/<head([^>]*)>/i, '<head$1><base href="' + base.replace(/"/g, "&quot;") + '">');
 
