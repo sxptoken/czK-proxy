@@ -28,6 +28,7 @@
       <button data-query="Google">Google</button>
       <button data-query="YouTube">YouTube</button>
       <button data-query="Wikipedia">Wikipedia</button>
+      <button type="button" id="basketRandomBtn">🏀 Basket Random</button>
     </div>
   </main>
 
@@ -133,6 +134,10 @@
     resultsForm.addEventListener("submit", (e) => {
       e.preventDefault();
       search(resultsInput.value);
+    });
+
+    document.getElementById("basketRandomBtn").addEventListener("click", () => {
+      window.location.href = "/api/proxy?url=" + encodeURIComponent("https://basket-random.org/");
     });
 
     document.querySelectorAll("[data-query]").forEach((button) => {
