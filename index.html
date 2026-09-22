@@ -98,7 +98,9 @@
         }
 
         status.textContent = data.results.length + " DuckDuckGo results";
-        results.innerHTML = data.results.map((item) => {
+        results.innerHTML = "";
+
+        data.results.forEach((item) => {
           const article = document.createElement("article");
 
           const title = document.createElement("a");
@@ -120,7 +122,7 @@
           });
 
           article.append(title, url, snippet);
-          return article;
+          results.appendChild(article);
         });
       } catch (error) {
         console.error(error);
