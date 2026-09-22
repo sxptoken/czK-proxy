@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>czX YouTube</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+.yt-page{width:min(1180px,90vw);margin:auto;padding:35px 0;position:relative;z-index:1}
+.yt-head{display:flex;align-items:center;gap:18px;margin-bottom:30px}
+.yt-head a{color:#222;text-decoration:none;font-weight:800}
+.yt-head h1{margin:0;font-size:30px}
+.search{display:flex;max-width:720px;margin:auto;gap:8px}
+.search input{flex:1;padding:14px;border:1px solid #ccc;border-radius:12px;font:inherit}
+.search button{padding:0 20px;border:0;border-radius:12px;background:#181818;color:#fff;font-weight:800}
+#message{text-align:center;color:#707070;margin:35px}
+#results{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.card{background:#fff;border-radius:15px;overflow:hidden;box-shadow:0 8px 25px rgba(0,0,0,.08)}
+.card img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover}
+.card div{padding:13px}.card h3{margin:0;font-size:14px}.card p{margin:6px 0 0;color:#777;font-size:11px}
+</style>
+</head>
+<body>
+<header class="nav">
+<a class="logo" href="/">czX</a>
+<a class="youtube-button" href="/">← czX</a>
+</header>
+<main class="yt-page">
+<div class="yt-head"><a href="/">← Back</a><h1>YouTube</h1></div>
+<form class="search" id="form"><input id="q" placeholder="Search YouTube"><button>Search</button></form>
+<div id="message">Search for a video to get started.</div>
+<section id="results"></section>
+</main>
+<script>
+const form=document.getElementById("form"),q=document.getElementById("q"),results=document.getElementById("results"),message=document.getElementById("message");
+form.addEventListener("submit",async e=>{
+e.preventDefault();if(!q.value.trim())return;
+results.innerHTML="";message.textContent="Searching...";
+try{
+const r=await fetch("/api/youtube?q="+encodeURIComponent(q.value.trim()));
+const d=await r.json();if(!r.ok)throw Error(d.error||"Search failed");
+if(!d.items?.length){message.textContent="No results found.";return}
+message.style.display="none";
+results.innerHTML=d.items.map(x=>{
+const s=x.snippet,id=x.id.videoId;
+return '<article class="card"><a href="/watch.html?v='+encodeURIComponent(id)+'"><img src="'+s.thumbnails.high.url+'"><div><h3>'+s.title.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</h3><p>'+s.channelTitle.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</p></div></a></article>';
+}).join("");
+}catch(err){message.textContent=err.message}
+});
+</script>
+</body>
+</html>
