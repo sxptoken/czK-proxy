@@ -7,74 +7,92 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // DuckDuckGo's public Instant Answer API is no-key and works from serverless functions.
     const ddgUrl =
-      "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
+      "https://api.duckduckgo.com/?q=" +
+      encodeURIComponent(q) +
+      "&format=json&no_html=1&skip_disambig=0";
 
     const response = await fetch(ddgUrl, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; czX/1.0)",
-        "Accept": "text/html"
+        "Accept": "application/json",
+        "User-Agent": "czX-Proxy/1.0"
       }
     });
 
     if (!response.ok) {
-      throw new Error("DuckDuckGo returned HTTP " + response.status);
+      throw new Error("DuckDuckGo HTTP " + response.status);
     }
 
-    const html = await response.text();
+    const data = await response.json();
     const results = [];
-    const blockRegex = /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-    let match;
 
-    while ((match = blockRegex.exec(html)) && results.length < 10) {
-      let target = match[1];
-      const title = match[2].replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').trim();
+    if (data.AbstractURL && (data.AbstractText || data.Heading)) {
+      results.push({
+        title: data.Heading || q,
+        url: data.AbstractURL,
+        snippet: data.AbstractText || ""
+      });
+    }
 
-      if (target.startsWith("//")) target = "https:" + target;
+    function addTopic(item) {
+      if (!item || !item.FirstURL || !item.Text || results.length >= 10) return;
+      if (results.some(r => r.url === item.FirstURL)) return;
 
-      const clean = target.match(/uddg=([^&]+)/);
-      if (clean) {
-        try { target = decodeURIComponent(clean[1]); } catch (_) {}
-      }
+      results.push({
+        title: item.Text.split(" - ")[0].trim(),
+        url: item.FirstURL,
+        snippet: item.Text
+      });
+    }
 
-      if (/^https?:\/\//i.test(target) && title) {
-        results.push({
-          title,
-          url: target,
-          snippet: ""
-        });
+    for (const item of data.RelatedTopics || []) {
+      if (results.length >= 10) break;
+
+      if (Array.isArray(item.Topics)) {
+        for (const sub of item.Topics) {
+          addTopic(sub);
+          if (results.length >= 10) break;
+        }
+      } else {
+        addTopic(item);
       }
     }
 
-    // If DDG's HTML changes, use its public no-key API as a fallback.
-    if (!results.length) {
-      const apiResponse = await fetch(
-        "https://api.duckduckgo.com/?q=" +
+    // If DuckDuckGo returns no Instant Answer results, use Wikipedia's
+    // public search API so the czX search page still works without a key.
+    if (results.length === 0) {
+      const wikiUrl =
+        "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" +
         encodeURIComponent(q) +
-        "&format=json&no_html=1&skip_disambig=1",
-        { headers: { "User-Agent": "czX/1.0" } }
-      );
+        "&srlimit=10&format=json&origin=*";
 
-      if (apiResponse.ok) {
-        const data = await apiResponse.json();
-
-        if (data.AbstractURL) {
-          results.push({
-            title: data.Heading || q,
-            url: data.AbstractURL,
-            snippet: data.AbstractText || ""
-          });
+      const wikiResponse = await fetch(wikiUrl, {
+        headers: {
+          "Accept": "application/json",
+          "User-Agent": "czX-Proxy/1.0"
         }
+      });
 
-        for (const item of data.RelatedTopics || []) {
+      if (wikiResponse.ok) {
+        const wiki = await wikiResponse.json();
+
+        for (const item of wiki.query?.search || []) {
           if (results.length >= 10) break;
-          if (item.FirstURL && item.Text) {
-            results.push({
-              title: item.Text.split(" - ")[0].trim(),
-              url: item.FirstURL,
-              snippet: item.Text
-            });
-          }
+
+          const snippet = String(item.snippet || "")
+            .replace(/<[^>]+>/g, "")
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&amp;/g, "&");
+
+          results.push({
+            title: item.title,
+            url:
+              "https://en.wikipedia.org/wiki/" +
+              encodeURIComponent(item.title.replace(/ /g, "_")),
+            snippet
+          });
         }
       }
     }
@@ -83,13 +101,13 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: true,
       query: q,
-      results: results.slice(0, 10)
+      results
     });
   } catch (error) {
-    console.error("DuckDuckGo search error:", error);
+    console.error("czX search error:", error);
     return res.status(502).json({
       ok: false,
-      error: "DuckDuckGo could not be reached."
+      error: "The DuckDuckGo search service is temporarily unavailable."
     });
   }
 };
