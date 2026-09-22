@@ -2,50 +2,69 @@ module.exports = async (req, res) => {
   const url = new URL(req.url || "/", "https://czx.local");
   const q = url.searchParams.get("q")?.trim() || "";
 
-  if (!q) return res.status(400).json({ ok: false, error: "Missing search query." });
+  if (!q) {
+    return res.status(400).json({ ok: false, error: "Missing search query." });
+  }
+
+  const apiKey = process.env.BRAVE_SEARCH_API_KEY;
+
+  if (!apiKey) {
+    return res.status(500).json({
+      ok: false,
+      error: "BRAVE_SEARCH_API_KEY is not configured in Vercel."
+    });
+  }
 
   try {
-    const ddgUrl = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
-    const response = await fetch("https://r.jina.ai/" + ddgUrl, {
-      headers: { "Accept": "text/plain", "User-Agent": "czX-Proxy/1.0" }
+    const searchUrl =
+      "https://api.search.brave.com/res/v1/web/search?" +
+      new URLSearchParams({
+        q,
+        count: "10",
+        country: "us",
+        search_lang: "en",
+        safesearch: "moderate"
+      }).toString();
+
+    const response = await fetch(searchUrl, {
+      headers: {
+        "Accept": "application/json",
+        "X-Subscription-Token": apiKey
+      }
     });
 
-    if (!response.ok) throw new Error("Reader HTTP " + response.status);
+    const data = await response.json();
 
-    const body = await response.text();
-    const results = [];
-    const seen = new Set();
-
-    let pos = 0;
-    while (results.length < 10) {
-      const open = body.indexOf("[", pos);
-      if (open < 0) break;
-
-      const closeTitle = body.indexOf("](", open + 1);
-      if (closeTitle < 0) break;
-
-      const closeUrl = body.indexOf(")", closeTitle + 2);
-      if (closeUrl < 0) break;
-
-      const title = body.slice(open + 1, closeTitle).trim();
-      const resultUrl = body.slice(closeTitle + 2, closeUrl).trim();
-      pos = closeUrl + 1;
-
-      if (!title || !/^https?:\/\//i.test(resultUrl)) continue;
-      if (/duckduckgo\.com/i.test(resultUrl)) continue;
-      if (seen.has(resultUrl)) continue;
-
-      seen.add(resultUrl);
-      results.push({ title, url: resultUrl, snippet: "" });
+    if (!response.ok) {
+      console.error("Brave Search API error:", response.status, data);
+      return res.status(502).json({
+        ok: false,
+        error: "Brave Search API returned HTTP " + response.status + "."
+      });
     }
 
+    const results = (data.web?.results || [])
+      .slice(0, 10)
+      .map((item) => ({
+        title: item.title || "Untitled",
+        url: item.url,
+        snippet: item.description || ""
+      }))
+      .filter((item) => item.url);
+
     res.setHeader("Cache-Control", "no-store");
-    return res.status(200).json({ ok: true, query: q, results });
+
+    return res.status(200).json({
+      ok: true,
+      query: q,
+      results
+    });
   } catch (error) {
-    console.error("czX search error:", error);
+    console.error("czX Brave Search error:", error);
+
     return res.status(502).json({
       ok: false,
-      error: "The search service could not be reached from Vercel."
+      error: "Brave Search could not be reached."
     });
   }
 };
