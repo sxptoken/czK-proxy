@@ -23,14 +23,14 @@
         <h1>Welcome to <span>czX</span></h1>
       </div>
 
-      <div class="quick-card youtube-card">
+      <a class="quick-card youtube-card" href="/youtube.html" aria-label="Open YouTube">
         <div class="quick-icon">▶</div>
         <div class="quick-copy">
           <h2>YouTube</h2>
           <p>Watch &amp; search</p>
         </div>
-        <a class="quick-arrow" href="/youtube.html" aria-label="Open YouTube">→</a>
-      </div>
+        <span class="quick-arrow">→</span>
+      </a>
 
     </section>
   </main>
@@ -102,12 +102,6 @@
       try{const parsed=new URL(url);if(!["http:","https:"].includes(parsed.protocol))throw new Error()}catch{savedMessage.textContent="Enter a valid http or https link.";return}
       localStorage.setItem("czxPanicKey",key);localStorage.setItem("czxPanicUrl",url);
       savedMessage.textContent=`Saved: ${key.toUpperCase()} → ${url}`;
-    });
-
-    document.getElementById("siteSearch").addEventListener("submit",e=>{
-      e.preventDefault();
-      const q=document.getElementById("searchInput").value.trim();
-      if(q) window.location.href="/youtube.html?q="+encodeURIComponent(q);
     });
 
     const savedWallpaper=localStorage.getItem("czxWallpaper");
