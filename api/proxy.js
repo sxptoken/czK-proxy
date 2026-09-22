@@ -18,6 +18,44 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // YouTube watch pages are handled with the official embed player.
+    if (targetUrl.hostname === "www.youtube.com" && targetUrl.pathname === "/watch") {
+      const videoId = targetUrl.searchParams.get("v");
+
+      if (videoId && /^[A-Za-z0-9_-]{6,20}$/.test(videoId)) {
+        const embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=0&rel=0";
+        const page = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>czX YouTube</title>
+<style>
+html,body{margin:0;background:#08090d;color:#fff;font-family:Arial,sans-serif;height:100%}
+body{display:flex;align-items:center;justify-content:center}
+.player{width:min(1200px,94vw)}
+.video{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden}
+iframe{width:100%;height:100%;border:0}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 0}
+.logo{font-size:24px;font-weight:900;color:#fff;text-decoration:none}
+.back{color:#aeb5c2;text-decoration:none;font-size:14px}
+</style>
+</head>
+<body>
+<div class="player">
+  <div class="top"><a class="logo" href="/">czX</a><a class="back" href="javascript:history.back()">← Back</a></div>
+  <div class="video"><iframe src="${embedUrl}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+</div>
+</body>
+</html>`;
+
+        res.status(200);
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Cache-Control", "no-store");
+        return res.send(page);
+      }
+    }
+
     const response = await fetch(targetUrl.href, {
       redirect: "follow",
       headers: {
