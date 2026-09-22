@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     // When the search is for YouTube, search YouTube pages specifically so
     // the first result is useful instead of DuckDuckGo's Wikipedia entry.
     const searchQuery = /youtube/i.test(q)
-      ? "site:youtube.com " + q
+      ? "site:youtube.com/watch " + q
       : q;
     const target = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(searchQuery);
     const readerUrl = "https://r.jina.ai/" + target;
