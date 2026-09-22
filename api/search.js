@@ -2,41 +2,25 @@ module.exports = async (req, res) => {
   const url = new URL(req.url || "/", "https://czx.local");
   const q = url.searchParams.get("q")?.trim() || "";
 
-  if (!q) {
-    return res.status(400).json({ ok: false, error: "Missing search query." });
-  }
+  if (!q) return res.status(400).json({ ok: false, error: "Missing search query." });
 
   try {
-    // Free relay: Jina Reader fetches DuckDuckGo's HTML results and
-    // converts the page into readable text/Markdown for the Vercel function.
-    // When the search is for YouTube, search YouTube pages specifically so
-    // the first result is useful instead of DuckDuckGo's Wikipedia entry.
-    const searchQuery = /youtube/i.test(q)
-      ? q.replace(/youtube/ig, "").trim() + " site:youtube.com"
-      : q;
-    const target = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(searchQuery);
+    // Always use the normal DuckDuckGo query. Special YouTube filtering was
+    // causing empty result sets when DuckDuckGo/Jina changed its formatting.
+    const target = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
     const readerUrl = "https://r.jina.ai/" + target;
 
     const response = await fetch(readerUrl, {
-      headers: {
-        "Accept": "text/plain",
-        "User-Agent": "czX Search"
-      }
+      headers: { "Accept": "text/plain", "User-Agent": "czX Search" }
     });
 
     if (!response.ok) {
-      console.error("DuckDuckGo relay error:", response.status);
-      return res.status(502).json({
-        ok: false,
-        error: "DuckDuckGo search could not be reached."
-      });
+      return res.status(502).json({ ok: false, error: "DuckDuckGo search could not be reached." });
     }
 
     const text = await response.text();
     const results = [];
     const seen = new Set();
-
-    // Jina commonly returns DuckDuckGo results as Markdown links.
     const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
     let match;
 
@@ -45,47 +29,25 @@ module.exports = async (req, res) => {
       const resultUrl = match[2].trim();
 
       if (!title || !resultUrl || seen.has(resultUrl)) continue;
-      if (resultUrl.includes("duckduckgo.com")) continue;
+      if (/duckduckgo\.com/i.test(resultUrl)) continue;
 
-      // Prefer real YouTube pages for YouTube searches, but allow youtu.be too.
-      if (/youtube/i.test(q) && !/^(https?:\/\/)?(www\.)?youtube\.com\//i.test(resultUrl) && !/^https?:\/\/youtu\.be\//i.test(resultUrl)) {
-        continue;
-      }
-
+      // Keep YouTube links recognizable so the proxy can open the embedded
+      // player, but never throw away all normal results.
       seen.add(resultUrl);
 
-      let snippet = "";
       const after = text.slice(match.index + match[0].length);
       const nextLine = after.split("\n").find((line) => line.trim());
+      const snippet = nextLine
+        ? nextLine.replace(/^[-*#>\s]+/, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").trim().slice(0, 300)
+        : "";
 
-      if (nextLine) {
-        snippet = nextLine
-          .replace(/^[-*#>\s]+/, "")
-          .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-          .trim()
-          .slice(0, 300);
-      }
-
-      results.push({
-        title,
-        url: resultUrl,
-        snippet
-      });
+      results.push({ title, url: resultUrl, snippet });
     }
 
     res.setHeader("Cache-Control", "no-store");
-
-    return res.status(200).json({
-      ok: true,
-      query: q,
-      results
-    });
+    return res.status(200).json({ ok: true, query: q, results });
   } catch (error) {
     console.error("czX DuckDuckGo search error:", error);
-
-    return res.status(502).json({
-      ok: false,
-      error: "DuckDuckGo search could not be reached."
-    });
+    return res.status(502).json({ ok: false, error: "DuckDuckGo search could not be reached." });
   }
 };
