@@ -9,7 +9,12 @@ module.exports = async (req, res) => {
   try {
     // Free relay: Jina Reader fetches DuckDuckGo's HTML results and
     // converts the page into readable text/Markdown for the Vercel function.
-    const target = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
+    // When the search is for YouTube, search YouTube pages specifically so
+    // the first result is useful instead of DuckDuckGo's Wikipedia entry.
+    const searchQuery = /youtube/i.test(q)
+      ? "site:youtube.com " + q
+      : q;
+    const target = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(searchQuery);
     const readerUrl = "https://r.jina.ai/" + target;
 
     const response = await fetch(readerUrl, {
@@ -41,6 +46,11 @@ module.exports = async (req, res) => {
 
       if (!title || !resultUrl || seen.has(resultUrl)) continue;
       if (resultUrl.includes("duckduckgo.com")) continue;
+
+      // Prefer real YouTube pages for YouTube searches.
+      if (/youtube/i.test(q) && !/^(https?:\/\/)?([\w-]+\.)?youtube\.com\//i.test(resultUrl)) {
+        continue;
+      }
 
       seen.add(resultUrl);
 
