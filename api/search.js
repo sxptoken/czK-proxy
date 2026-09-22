@@ -7,8 +7,8 @@ module.exports = async (req, res) => {
   try {
     // If the search is asking for YouTube, give czX a real YouTube search
     // result instead of letting DuckDuckGo promote Wikipedia's article.
-    if (/^youtube(?:\\s|$)/i.test(q)) {
-      const youtubeQuery = q.replace(/^youtube\\s*/i, "").trim() || "trending";
+    if (/^youtube(?:\s|$)/i.test(q)) {
+      const youtubeQuery = q.replace(/^youtube\s*/i, "").trim() || "trending";
       const youtubeUrl =
         "https://www.youtube.com/results?search_query=" +
         encodeURIComponent(youtubeQuery);
@@ -38,23 +38,23 @@ module.exports = async (req, res) => {
     const text = await response.text();
     const results = [];
     const seen = new Set();
-    const linkRegex = /\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g;
+    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
     let match;
 
     while ((match = linkRegex.exec(text)) && results.length < 10) {
-      const title = match[1].replace(/\\\\/g, "").trim();
+      const title = match[1].replace(/\\/g, "").trim();
       const resultUrl = match[2].trim();
 
       if (!title || !resultUrl || seen.has(resultUrl)) continue;
-      if (/duckduckgo\\.com/i.test(resultUrl)) continue;
+      if (/duckduckgo\.com/i.test(resultUrl)) continue;
 
       seen.add(resultUrl);
 
       const after = text.slice(match.index + match[0].length);
-      const nextLine = after.split("\\n").find((line) => line.trim());
+      const nextLine = after.split("\n").find((line) => line.trim());
       const snippet = nextLine
-        ? nextLine.replace(/^[-*#>\\s]+/, "")
-            .replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, "$1")
+        ? nextLine.replace(/^[-*#>\s]+/, "")
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
             .trim()
             .slice(0, 300)
         : "";
