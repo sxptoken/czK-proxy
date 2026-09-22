@@ -1,6 +1,6 @@
 *{box-sizing:border-box}
 html,body{min-height:100%}
-body{margin:0;background:#b9b9b9;color:#171717;font-family:Inter,Arial,Helvetica,sans-serif;transition:background .25s ease}
+body{margin:0;background:#030107 url("/czx-space.svg") center center / cover fixed no-repeat;color:#171717;font-family:Inter,Arial,Helvetica,sans-serif;transition:background .25s ease}
 body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.34),transparent 45%)}
 .nav{width:min(1180px,90vw);height:78px;margin:auto;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
 .logo{color:#171717;text-decoration:none;font-size:30px;font-weight:900;letter-spacing:-2.5px}
