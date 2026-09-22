@@ -21,6 +21,10 @@
     .yt-search button:hover{background:#303030}
     .yt-home{color:#aaa;text-decoration:none;font-size:12px;white-space:nowrap}
     .yt-home:hover{color:#fff}
+    .yt-settings{border:0;background:transparent;color:#aaa;font:inherit;font-size:12px;cursor:pointer;padding:0}.yt-settings:hover{color:#fff}
+    .yt-settings-panel{position:fixed;right:3vw;top:76px;z-index:50;width:min(380px,92vw);padding:20px;border:1px solid #343434;border-radius:16px;background:rgba(18,18,18,.98);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .yt-settings-panel[hidden]{display:none}.yt-settings-panel h2{margin:0 0 7px;font-size:18px}.yt-settings-panel p{margin:0 0 14px;color:#aaa;font-size:12px;line-height:1.5}
+    .yt-file{width:100%;font-size:12px;color:#ddd}.yt-clear{margin-top:10px;border:0;border-radius:8px;background:#292929;color:#fff;padding:9px 12px;cursor:pointer}
     .yt-main{width:min(1280px,94vw);margin:0 auto;padding:28px 0 50px}
     .yt-title{margin:0 0 22px;font-size:22px;letter-spacing:-.4px}
     .yt-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:26px 18px}
@@ -49,8 +53,16 @@
         <button type="submit" aria-label="Search">⌕</button>
       </form>
       <a class="yt-home" href="/">czX</a>
+      <button class="yt-settings" id="ytSettingsButton" type="button">⚙ Settings</button>
     </div>
   </header>
+
+  <div class="yt-settings-panel" id="ytSettingsPanel" hidden>
+    <h2>czX Settings</h2>
+    <p>Set the same custom wallpaper used on the czX home screen. It is saved only in this browser.</p>
+    <input class="yt-file" id="ytWallpaperFile" type="file" accept="image/*">
+    <button class="yt-clear" id="ytClearWallpaper" type="button">Clear wallpaper</button>
+  </div>
 
   <main class="yt-main">
     <div class="yt-player" id="player">
@@ -135,6 +147,40 @@
       search(input.value);
     });
     closePlayer.addEventListener("click",closeVideo);
+
+    const ytSettingsButton=document.getElementById("ytSettingsButton");
+    const ytSettingsPanel=document.getElementById("ytSettingsPanel");
+    const ytWallpaperFile=document.getElementById("ytWallpaperFile");
+    const ytClearWallpaper=document.getElementById("ytClearWallpaper");
+
+    ytSettingsButton.addEventListener("click",()=>{
+      ytSettingsPanel.hidden=!ytSettingsPanel.hidden;
+    });
+    ytWallpaperFile.addEventListener("change",()=>{
+      const file=ytWallpaperFile.files[0];
+      if(!file||!file.type.startsWith("image/"))return;
+      const reader=new FileReader();
+      reader.onload=()=>{
+        localStorage.setItem("czxWallpaper",reader.result);
+        document.body.style.backgroundImage=`url("${reader.result}")`;
+        document.body.style.backgroundSize="cover";
+        document.body.style.backgroundPosition="center";
+        document.body.style.backgroundAttachment="fixed";
+      };
+      reader.readAsDataURL(file);
+    });
+    ytClearWallpaper.addEventListener("click",()=>{
+      localStorage.removeItem("czxWallpaper");
+      document.body.style.backgroundImage="";
+      ytWallpaperFile.value="";
+    });
+    const savedWallpaper=localStorage.getItem("czxWallpaper");
+    if(savedWallpaper){
+      document.body.style.backgroundImage=`url("${savedWallpaper}")`;
+      document.body.style.backgroundSize="cover";
+      document.body.style.backgroundPosition="center";
+      document.body.style.backgroundAttachment="fixed";
+    }
 
     const initial=new URLSearchParams(location.search).get("q");
     if(initial){input.value=initial;search(initial)}
