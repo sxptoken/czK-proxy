@@ -28,7 +28,7 @@
 <g transform="translate(800 470)" filter="url(#glow)">
  <ellipse rx="315" ry="95" fill="none" stroke="#9b45ff" stroke-width="5" opacity=".65" transform="rotate(-8)"/>
  <ellipse rx="345" ry="110" fill="none" stroke="#6e25d9" stroke-width="2" opacity=".6" transform="rotate(-8)"/>
- <text x="0" y="35" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="210" font-weight="900" font-style="italic" letter-spacing="-18" fill="url(#txt)" stroke="#fff" stroke-opacity=".22" stroke-width="3">czX</text>
- <path d="M-190-80l18 42 42 18-42 18-18 42-18-42-42-18 42-18z" fill="#fff"/>
+ <text x="0" y="35" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="210" font-weight="900" font-style="italic" letter-spacing="-18" fill="#050507" stroke="#8f63d8" stroke-opacity=".28" stroke-width="4">czX</text>
+ <path d="M-190-80l18 42 42 18-42 18-18 42-18-42-42-18 42-18z" fill="#050507"/>
 </g>
 </svg>
