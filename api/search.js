@@ -6,93 +6,92 @@ module.exports = async (req, res) => {
     return res.status(400).json({ ok: false, error: "Missing search query." });
   }
 
+  const headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml"
+  };
+
   try {
-    // DuckDuckGo's public Instant Answer API is no-key and works from serverless functions.
-    const ddgUrl =
-      "https://api.duckduckgo.com/?q=" +
-      encodeURIComponent(q) +
-      "&format=json&no_html=1&skip_disambig=0";
+    let html = "";
+    let lastError = null;
 
-    const response = await fetch(ddgUrl, {
-      headers: {
-        "Accept": "application/json",
-        "User-Agent": "czX-Proxy/1.0"
+    // Try DuckDuckGo's HTML endpoint first, then its lightweight endpoint.
+    const endpoints = [
+      "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q),
+      "https://lite.duckduckgo.com/lite/?q=" + encodeURIComponent(q)
+    ];
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(endpoint, {
+          headers,
+          redirect: "follow"
+        });
+
+        if (response.ok) {
+          html = await response.text();
+          if (html && html.length > 500) break;
+        } else {
+          lastError = new Error("DuckDuckGo HTTP " + response.status);
+        }
+      } catch (err) {
+        lastError = err;
       }
-    });
-
-    if (!response.ok) {
-      throw new Error("DuckDuckGo HTTP " + response.status);
     }
 
-    const data = await response.json();
+    if (!html) {
+      throw lastError || new Error("DuckDuckGo returned no data");
+    }
+
     const results = [];
+    const seen = new Set();
 
-    if (data.AbstractURL && (data.AbstractText || data.Heading)) {
-      results.push({
-        title: data.Heading || q,
-        url: data.AbstractURL,
-        snippet: data.AbstractText || ""
-      });
+    function decode(value) {
+      return value
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&#x27;/g, "'")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/<[^>]*>/g, "")
+        .trim();
     }
 
-    function addTopic(item) {
-      if (!item || !item.FirstURL || !item.Text || results.length >= 10) return;
-      if (results.some(r => r.url === item.FirstURL)) return;
+    // Standard DuckDuckGo HTML results.
+    const standard = /<a[^>]*class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+    let match;
 
-      results.push({
-        title: item.Text.split(" - ")[0].trim(),
-        url: item.FirstURL,
-        snippet: item.Text
-      });
-    }
+    while ((match = standard.exec(html)) && results.length < 10) {
+      let target = match[1];
+      const title = decode(match[2]);
 
-    for (const item of data.RelatedTopics || []) {
-      if (results.length >= 10) break;
+      const uddg = target.match(/[?&]uddg=([^&]+)/i);
+      if (uddg) {
+        try { target = decodeURIComponent(uddg[1]); } catch (_) {}
+      }
 
-      if (Array.isArray(item.Topics)) {
-        for (const sub of item.Topics) {
-          addTopic(sub);
-          if (results.length >= 10) break;
-        }
-      } else {
-        addTopic(item);
+      if (target.startsWith("//")) target = "https:" + target;
+
+      if (/^https?:\/\//i.test(target) && title && !seen.has(target)) {
+        seen.add(target);
+        results.push({ title, url: target, snippet: "" });
       }
     }
 
-    // If DuckDuckGo returns no Instant Answer results, use Wikipedia's
-    // public search API so the czX search page still works without a key.
-    if (results.length === 0) {
-      const wikiUrl =
-        "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" +
-        encodeURIComponent(q) +
-        "&srlimit=10&format=json&origin=*";
+    // DuckDuckGo Lite uses result-link anchors.
+    if (!results.length) {
+      const lite = /<a[^>]*class=["'][^"']*result-link[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
 
-      const wikiResponse = await fetch(wikiUrl, {
-        headers: {
-          "Accept": "application/json",
-          "User-Agent": "czX-Proxy/1.0"
-        }
-      });
+      while ((match = lite.exec(html)) && results.length < 10) {
+        let target = match[1];
+        const title = decode(match[2]);
 
-      if (wikiResponse.ok) {
-        const wiki = await wikiResponse.json();
+        if (target.startsWith("//")) target = "https:" + target;
 
-        for (const item of wiki.query?.search || []) {
-          if (results.length >= 10) break;
-
-          const snippet = String(item.snippet || "")
-            .replace(/<[^>]+>/g, "")
-            .replace(/&quot;/g, '"')
-            .replace(/&#39;/g, "'")
-            .replace(/&amp;/g, "&");
-
-          results.push({
-            title: item.title,
-            url:
-              "https://en.wikipedia.org/wiki/" +
-              encodeURIComponent(item.title.replace(/ /g, "_")),
-            snippet
-          });
+        if (/^https?:\/\//i.test(target) && title && !seen.has(target)) {
+          seen.add(target);
+          results.push({ title, url: target, snippet: "" });
         }
       }
     }
@@ -104,10 +103,11 @@ module.exports = async (req, res) => {
       results
     });
   } catch (error) {
-    console.error("czX search error:", error);
+    console.error("czX DuckDuckGo error:", error);
+
     return res.status(502).json({
       ok: false,
-      error: "The DuckDuckGo search service is temporarily unavailable."
+      error: "DuckDuckGo could not be reached from the Vercel server."
     });
   }
 };
