@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     // When the search is for YouTube, search YouTube pages specifically so
     // the first result is useful instead of DuckDuckGo's Wikipedia entry.
     const searchQuery = /youtube/i.test(q)
-      ? "site:youtube.com/watch " + q
+      ? q.replace(/youtube/ig, "").trim() + " site:youtube.com"
       : q;
     const target = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(searchQuery);
     const readerUrl = "https://r.jina.ai/" + target;
@@ -47,8 +47,8 @@ module.exports = async (req, res) => {
       if (!title || !resultUrl || seen.has(resultUrl)) continue;
       if (resultUrl.includes("duckduckgo.com")) continue;
 
-      // Prefer real YouTube pages for YouTube searches.
-      if (/youtube/i.test(q) && !/^(https?:\/\/)?([\w-]+\.)?youtube\.com\//i.test(resultUrl)) {
+      // Prefer real YouTube pages for YouTube searches, but allow youtu.be too.
+      if (/youtube/i.test(q) && !/^(https?:\/\/)?(www\.)?youtube\.com\//i.test(resultUrl) && !/^https?:\/\/youtu\.be\//i.test(resultUrl)) {
         continue;
       }
 
