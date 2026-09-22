@@ -105,7 +105,7 @@
 
           const title = document.createElement("a");
           title.className = "title";
-          title.href = item.url;
+          title.href = "/api/proxy?url=" + encodeURIComponent(item.url);
           title.textContent = item.title;
 
           const url = document.createElement("div");
