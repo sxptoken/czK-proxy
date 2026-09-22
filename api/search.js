@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     const readerUrl = "https://r.jina.ai/" + target;
 
     const response = await fetch(readerUrl, {
-      headers: { "Accept": "text/plain", "User-Agent": "czX Search" }
+      headers: { "Accept": "text/plain", "User-Agent": "Mozilla/5.0" }
     });
 
     if (!response.ok) {
