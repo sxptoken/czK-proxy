@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08040f">
+  <title>Games • czX</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .games-page{width:min(920px,92vw);margin:auto;position:relative;z-index:2}
+    .games-content{min-height:calc(100vh - 120px);padding:110px 0 80px}
+    .games-card{padding:28px;border:1px solid rgba(137,58,255,.55);border-radius:18px;background:rgba(6,2,19,.78);box-shadow:0 0 45px rgba(102,35,218,.13);text-align:center}
+    .games-card h1{margin:0;color:#fff;font-size:28px}
+    .games-card h1 span{color:#a865ff}
+    .games-card p{margin:9px 0 0;color:#9c91ad;font-size:13px}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="czX home"><span class="brand-star">✦</span><span>czX</span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a class="nav-link" href="/">⌂ <span>Home</span></a>
+      <a class="nav-link" href="/youtube.html">▶ <span>YouTube</span></a>
+      <a class="nav-link active" href="/games.html">🎮 <span>Games</span></a>
+      <a class="nav-link" href="/#settings">⚙ <span>Settings</span></a>
+    </nav>
+  </header>
+
+  <main class="games-page">
+    <section class="games-content">
+      <div class="games-card">
+        <h1><span>🎮</span> Games</h1>
+        <p>Games can be added here.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2026 czX. All rights reserved.</footer>
+
+  <script>
+    const savedWallpaper=localStorage.getItem("czxWallpaper");
+    if(savedWallpaper){
+      document.body.style.backgroundImage=`url("${savedWallpaper}")`;
+      document.body.classList.add("custom-wallpaper");
+    }
+  </script>
+</body>
+</html>
