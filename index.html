@@ -3,155 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>czX Proxy</title>
+  <meta name="theme-color" content="#b8b8b8">
+  <title>czX</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="/" onclick="return goHome()">czX</a>
-    <div class="secure">● DUCKDUCKGO</div>
+  <header class="nav">
+    <a class="logo" href="/" aria-label="czX home">czX</a>
+    <span class="status">czX</span>
   </header>
 
-  <main class="hero" id="home">
-    <div class="badge">● ONLINE</div>
-    <h1>Browse the web freely</h1>
-    <p class="subtitle">Search DuckDuckGo through czX without leaving the czX website.</p>
+  <main class="page">
+    <section class="hero">
+      <div class="logo-mark">czX</div>
+      <div class="eyebrow">WELCOME</div>
+      <h1>Simple. Clean. czX.</h1>
+      <p>A fresh space for the czX project.</p>
+    </section>
 
-    <form id="proxyForm" class="search-box">
-      <input id="searchInput" type="text" placeholder="Search the web..." autocomplete="off" autofocus>
-      <button type="submit">SEARCH</button>
-    </form>
+    <section class="cards" aria-label="czX sections">
+      <article class="card">
+        <span class="number">01</span>
+        <h2>Home</h2>
+        <p>The main czX space, kept clean and simple.</p>
+      </article>
 
-    <div class="quick">
-      <span>Quick searches</span>
-      <button data-query="DuckDuckGo">DuckDuckGo</button>
-      <button data-query="Google">Google</button>
-      <button data-query="YouTube">YouTube</button>
-      <button data-query="Wikipedia">Wikipedia</button>
-      <button type="button" id="basketRandomBtn">🏀 Basket Random</button>
-    </div>
+      <article class="card">
+        <span class="number">02</span>
+        <h2>Projects</h2>
+        <p>A place for future czX projects and features.</p>
+      </article>
+
+      <article class="card">
+        <span class="number">03</span>
+        <h2>More</h2>
+        <p>New sections can be added here whenever needed.</p>
+      </article>
+    </section>
   </main>
 
-  <main class="results-page" id="resultsPage" hidden>
-    <form id="resultsForm" class="search-box compact">
-      <a class="results-logo" href="/" onclick="return goHome()">czX</a>
-      <input id="resultsInput" type="text" placeholder="Search DuckDuckGo..." autocomplete="off">
-      <button type="submit">SEARCH</button>
-    </form>
-    <div id="status"></div>
-    <section id="results"></section>
-  </main>
-
-  <footer>czX Proxy · DuckDuckGo results stay inside czX</footer>
-
-  <script>
-    const home = document.getElementById("home");
-    const resultsPage = document.getElementById("resultsPage");
-    const input = document.getElementById("searchInput");
-    const resultsInput = document.getElementById("resultsInput");
-    const form = document.getElementById("proxyForm");
-    const resultsForm = document.getElementById("resultsForm");
-    const status = document.getElementById("status");
-    const results = document.getElementById("results");
-
-    function goHome() {
-      history.pushState({}, "", "/");
-      resultsPage.hidden = true;
-      home.hidden = false;
-      input.focus();
-      return false;
-    }
-
-    async function search(q, push = true) {
-      q = q.trim();
-      if (!q) return;
-
-      if (push) {
-        history.pushState({ q }, "", "/?q=" + encodeURIComponent(q));
-      }
-
-      home.hidden = true;
-      resultsPage.hidden = false;
-      resultsInput.value = q;
-      status.textContent = "Searching DuckDuckGo...";
-      results.innerHTML = "";
-
-      try {
-        const response = await fetch("/api/search?q=" + encodeURIComponent(q), {
-          headers: { "Accept": "application/json" },
-          cache: "no-store"
-        });
-        const raw = await response.text();
-        let data;
-        try {
-          data = JSON.parse(raw);
-        } catch (_) {
-          throw new Error("API returned non-JSON (" + response.status + ")");
-        }
-
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Search failed.");
-        }
-
-        if (!data.results.length) {
-          status.textContent = "No results found.";
-          return;
-        }
-
-        status.textContent = data.results.length + " DuckDuckGo results";
-        results.innerHTML = "";
-
-        data.results.forEach((item) => {
-          const article = document.createElement("article");
-
-          const title = document.createElement("a");
-          title.className = "title";
-          title.href = "/api/proxy?url=" + encodeURIComponent(item.url);
-          title.textContent = item.title;
-
-          const url = document.createElement("div");
-          url.className = "url";
-          url.textContent = item.url;
-
-          const snippet = document.createElement("p");
-          snippet.textContent = item.snippet || "";
-
-          article.append(title, url, snippet);
-          results.appendChild(article);
-        });
-      } catch (error) {
-        console.error(error);
-        status.textContent = "";
-        results.innerHTML = '<div class="error">Search failed: ' + (error.message || "Unknown error") + '</div>';
-      }
-    }
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      search(input.value);
-    });
-
-    resultsForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      search(resultsInput.value);
-    });
-
-    document.getElementById("basketRandomBtn").addEventListener("click", () => {
-      window.location.href = "/api/proxy?url=" + encodeURIComponent("https://basketrandomonline.github.io/");
-    });
-
-    document.querySelectorAll("[data-query]").forEach((button) => {
-      button.addEventListener("click", () => search(button.dataset.query));
-    });
-
-    window.addEventListener("popstate", () => {
-      const q = new URLSearchParams(location.search).get("q");
-      if (q) search(q, false);
-      else goHome();
-    });
-
-    const initialQ = new URLSearchParams(location.search).get("q");
-    if (initialQ) search(initialQ, false);
-  </script>
+  <footer>czX</footer>
 </body>
 </html>
