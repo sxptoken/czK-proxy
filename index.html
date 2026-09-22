@@ -3,76 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>czX Search</title>
+  <title>czX Proxy</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main>
-    <a class="logo" href="/">czX</a>
+  <header class="topbar">
+    <a class="brand" href="/">czX</a>
+    <div class="secure">FREE WEB PROXY</div>
+  </header>
 
-    <form id="searchForm">
-      <input id="searchInput" type="search" placeholder="Search the web..." autocomplete="off" autofocus>
-      <button type="submit">Search</button>
+  <main class="hero">
+    <div class="badge">● ONLINE</div>
+    <h1>Browse the web freely</h1>
+    <p class="subtitle">Enter a website address or search the web through DuckDuckGo.</p>
+
+    <form id="proxyForm" class="search-box">
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Enter a URL or search query"
+        autocomplete="off"
+        autofocus
+      >
+      <button type="submit">GO</button>
     </form>
 
-    <div id="status"></div>
-    <section id="results"></section>
+    <div class="quick">
+      <span>Quick links</span>
+      <button data-query="site:duckduckgo.com DuckDuckGo">DuckDuckGo</button>
+      <button data-query="Google">Google</button>
+      <button data-query="YouTube">YouTube</button>
+      <button data-query="Wikipedia">Wikipedia</button>
+    </div>
+
+    <section class="info">
+      <div>
+        <strong>Private browsing</strong>
+        <p>Searches are sent through the czX server instead of opening a new window.</p>
+      </div>
+      <div>
+        <strong>DuckDuckGo search</strong>
+        <p>Search queries use DuckDuckGo and open in the same browser tab.</p>
+      </div>
+      <div>
+        <strong>No setup</strong>
+        <p>No extension or application is required.</p>
+      </div>
+    </section>
   </main>
 
+  <footer>czX Proxy · Search powered by DuckDuckGo</footer>
+
   <script>
-    const form = document.getElementById("searchForm");
+    const form = document.getElementById("proxyForm");
     const input = document.getElementById("searchInput");
-    const status = document.getElementById("status");
-    const results = document.getElementById("results");
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const q = input.value.trim();
+    function openSearch(value) {
+      const q = value.trim();
       if (!q) return;
 
-      status.textContent = "Searching...";
-      results.innerHTML = "";
-
+      // Full URLs are opened directly. Everything else is a DuckDuckGo search.
+      let destination;
       try {
-        const response = await fetch("/api/search?q=" + encodeURIComponent(q));
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Search failed.");
+        const url = new URL(q);
+        if (url.protocol === "http:" || url.protocol === "https:") {
+          destination = url.href;
         }
+      } catch (_) {}
 
-        if (!data.results.length) {
-          status.textContent = "No results found.";
-          return;
-        }
-
-        status.textContent = data.results.length + " results";
-        results.innerHTML = data.results.map(result => {
-          const article = document.createElement("article");
-
-          const title = document.createElement("a");
-          title.className = "title";
-          title.href = result.url;
-          title.target = "_blank";
-          title.rel = "noopener noreferrer";
-          title.textContent = result.title;
-
-          const url = document.createElement("div");
-          url.className = "url";
-          url.textContent = result.url;
-
-          const snippet = document.createElement("p");
-          snippet.textContent = result.snippet || "";
-
-          article.append(title, url, snippet);
-          return article.outerHTML;
-        }).join("");
-      } catch (error) {
-        console.error(error);
-        status.textContent = "";
-        results.innerHTML = '<div class="error">Search is temporarily unavailable. Please try again.</div>';
+      if (!destination) {
+        destination = "https://duckduckgo.com/?q=" + encodeURIComponent(q);
       }
+
+      // Same tab — no popup and no new browser window.
+      window.location.href = destination;
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      openSearch(input.value);
+    });
+
+    document.querySelectorAll("[data-query]").forEach((button) => {
+      button.addEventListener("click", () => {
+        openSearch(button.dataset.query);
+      });
     });
   </script>
 </body>
