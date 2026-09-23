@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08040f">
+  <title>czX — Access</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body{display:grid;place-items:center;min-height:100vh;padding:24px}
+    .login-card{width:min(430px,100%);padding:32px;border:1px solid rgba(180,90,255,.3);border-radius:24px;background:rgba(10,5,18,.88);box-shadow:0 20px 70px rgba(0,0,0,.45);text-align:center}
+    .login-card h1{margin:0 0 8px}
+    .login-card p{opacity:.7;margin:0 0 24px}
+    .login-input{width:100%;box-sizing:border-box;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;outline:none;margin-bottom:12px}
+    .login-button{width:100%;padding:14px;border:0;border-radius:12px;background:#8b4dff;color:#fff;font-weight:700;cursor:pointer}
+    .login-error{min-height:20px;margin-top:12px;color:#ff8caa;font-size:14px}
+  </style>
+</head>
+<body>
+  <main class="login-card">
+    <div class="brand" style="justify-content:center;margin-bottom:18px"><span class="brand-star">✦</span><span>czX</span></div>
+    <h1>Site Locked</h1>
+    <p>Enter the password to access czX.</p>
+    <form id="loginForm">
+      <input class="login-input" id="password" type="password" autocomplete="current-password" placeholder="Password" autofocus required>
+      <button class="login-button" type="submit">Enter czX</button>
+      <div class="login-error" id="error" aria-live="polite"></div>
+    </form>
+  </main>
+  <script>
+    const form=document.getElementById("loginForm");
+    const password=document.getElementById("password");
+    const error=document.getElementById("error");
+    form.addEventListener("submit",async e=>{
+      e.preventDefault();
+      error.textContent="";
+      const response=await fetch("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:password.value})});
+      if(response.ok){
+        const params=new URLSearchParams(location.search);
+        const next=params.get("next");
+        location.href=next&&next.startsWith("/")&&!next.startsWith("//")?next:"/";
+      }else{
+        error.textContent="Incorrect password.";
+        password.select();
+      }
+    });
+  </script>
+</body>
+</html>
