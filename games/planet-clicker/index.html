@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planet Clicker</title>
+<style>
+body{font-family:Arial,sans-serif;background:#000;color:#fff;text-align:center;margin:0;padding:0}
+h1{margin-top:20px}
+#planet{width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,#4cafef 40%,#003366 100%);margin:40px auto;cursor:pointer;box-shadow:0 0 30px #4cafef;transition:transform .1s ease}
+#planet:active{transform:scale(.95)}
+.stats{margin:20px;font-size:18px}
+button{padding:10px 20px;font-size:16px;margin:10px;cursor:pointer;background:#4cafef;border:0;border-radius:5px;color:#000}
+button:disabled{background:#555;cursor:not-allowed}
+</style>
+</head>
+<body>
+<h1>Planet Clicker</h1>
+<div id="planet"></div>
+<div class="stats"><p>Clicks: <span id="score">0</span></p><p>Clicks per second: <span id="cps">0</span></p></div>
+<button id="upgradeBtn">Buy Upgrade (Cost: 50)</button>
+<script>
+let score=0,cps=0,upgradeCost=50;
+const scoreEl=document.getElementById("score"),cpsEl=document.getElementById("cps"),planetEl=document.getElementById("planet"),upgradeBtn=document.getElementById("upgradeBtn");
+planetEl.addEventListener("click",()=>{score++;updateDisplay()});
+upgradeBtn.addEventListener("click",()=>{if(score>=upgradeCost){score-=upgradeCost;cps++;upgradeCost=Math.floor(upgradeCost*1.5);upgradeBtn.textContent=`Buy Upgrade (Cost: ${upgradeCost})`;updateDisplay()}});
+setInterval(()=>{score+=cps;updateDisplay()},1000);
+function updateDisplay(){scoreEl.textContent=score;cpsEl.textContent=cps;upgradeBtn.disabled=score<upgradeCost}
+updateDisplay();
+</script>
+</body>
+</html>
