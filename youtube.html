@@ -77,20 +77,6 @@
   </main>
 
   <script>
-    const verses=[
-      ["John 3:16","For God so loved the world, that he gave his only begotten Son."],
-      ["Philippians 4:13","I can do all things through Christ which strengtheneth me."],
-      ["Jeremiah 29:11","For I know the thoughts that I think toward you, saith the LORD."],
-      ["Psalm 23:1","The LORD is my shepherd; I shall not want."],
-      ["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."]
-    ];
-    const verse=verses[Math.floor(Math.random()*verses.length)];
-    const verseOverlay=document.getElementById("verseOverlay");
-    document.getElementById("verseTitle").textContent=verse[0];
-    document.getElementById("verseText").textContent=verse[1];
-    verseOverlay.hidden=false;
-    setTimeout(()=>{verseOverlay.hidden=true},5000);
-
     const form=document.getElementById("searchForm");
     const input=document.getElementById("searchInput");
     const results=document.getElementById("results");
