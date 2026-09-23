@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08040f">
+  <title>Tiny Fishing • czX</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    html,body{margin:0;min-height:100%;background:#08040f;color:#fff}
+    .game-page{min-height:100vh;padding:90px 20px 30px;box-sizing:border-box}
+    .game-wrap{width:min(1100px,96vw);margin:0 auto}
+    .game-top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:15px}
+    .game-top h1{margin:0;font-size:20px}
+    .back-link{display:inline-block;padding:9px 13px;border-radius:10px;background:#251832;color:#ddd;text-decoration:none;font-size:12px;font-weight:800}
+    .game-box{border:1px solid rgba(125,50,245,.45);border-radius:16px;overflow:hidden;background:#000;box-shadow:0 0 45px rgba(102,35,218,.16)}
+    iframe{display:block;width:100%;height:min(78vh,760px);border:0;background:#000}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="czX home"><span class="brand-star">✦</span><span>czX</span></a>
+  </header>
+  <main class="game-page">
+    <div class="game-wrap">
+      <div class="game-top">
+        <h1>🎣 Tiny Fishing</h1>
+        <a class="back-link" href="/games.html">← Back to Games</a>
+      </div>
+      <div class="game-box">
+        <iframe src="/games/tiny-fishing/index.html" title="Tiny Fishing"></iframe>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
