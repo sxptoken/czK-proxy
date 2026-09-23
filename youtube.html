@@ -88,8 +88,8 @@
     const verseOverlay=document.getElementById("verseOverlay");
     document.getElementById("verseTitle").textContent=verse[0];
     document.getElementById("verseText").textContent=verse[1];
-    document.getElementById("closeVerse").addEventListener("click",()=>verseOverlay.hidden=true);
     verseOverlay.hidden=false;
+    setTimeout(()=>{verseOverlay.hidden=true},5000);
 
     const form=document.getElementById("searchForm");
     const input=document.getElementById("searchInput");
