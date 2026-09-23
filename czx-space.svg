@@ -1,36 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
 <defs>
-<radialGradient id="bg"><stop stop-color="#120521"/><stop offset=".48" stop-color="#05020b"/><stop offset="1" stop-color="#000"/></radialGradient>
-<radialGradient id="halo"><stop stop-color="#d49aff" stop-opacity=".9"/><stop offset=".28" stop-color="#8c32ff" stop-opacity=".55"/><stop offset=".7" stop-color="#35106d" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
-<linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b20d8"/><stop offset=".25" stop-color="#efb2ff"/><stop offset=".5" stop-color="#8b32ff"/><stop offset=".78" stop-color="#4b12a5"/><stop offset="1" stop-color="#c06cff"/></linearGradient>
-<filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<filter id="soft"><feGaussianBlur stdDeviation="40"/></filter>
+<radialGradient id="bg"><stop stop-color="#10041d"/><stop offset=".5" stop-color="#05020a"/><stop offset="1" stop-color="#000"/></radialGradient>
+<radialGradient id="halo"><stop stop-color="#b65cff" stop-opacity=".45"/><stop offset=".45" stop-color="#6519c9" stop-opacity=".16"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<linearGradient id="ring" x1="0" y1=".5" x2="1" y2=".5"><stop stop-color="#4d13a8"/><stop offset=".2" stop-color="#a84cff"/><stop offset=".5" stop-color="#e2a4ff"/><stop offset=".8" stop-color="#8a32ed"/><stop offset="1" stop-color="#4d13a8"/></linearGradient>
+<filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="soft"><feGaussianBlur stdDeviation="45"/></filter>
 </defs>
 <rect width="1600" height="900" fill="url(#bg)"/>
-<g filter="url(#soft)" opacity=".7">
-<ellipse cx="800" cy="455" rx="570" ry="310" fill="url(#halo)"/>
-<ellipse cx="170" cy="120" rx="390" ry="110" fill="#7225dc" opacity=".13" transform="rotate(-20 170 120)"/>
-<ellipse cx="1430" cy="780" rx="420" ry="120" fill="#7225dc" opacity=".13" transform="rotate(-20 1430 780)"/>
+<ellipse cx="800" cy="455" rx="520" ry="280" fill="url(#halo)" filter="url(#soft)"/>
+<g fill="#fff" opacity=".8">
+<circle cx="100" cy="100" r="2"/><circle cx="280" cy="180" r="1.5"/><circle cx="480" cy="90" r="1.5"/><circle cx="690" cy="170" r="2"/><circle cx="920" cy="100" r="1.5"/><circle cx="1160" cy="170" r="2"/><circle cx="1430" cy="110" r="1.5"/><circle cx="1520" cy="350" r="2"/>
+<circle cx="90" cy="650" r="1.5"/><circle cx="280" cy="760" r="2"/><circle cx="520" cy="700" r="1.5"/><circle cx="1080" cy="750" r="2"/><circle cx="1320" cy="650" r="1.5"/><circle cx="1510" cy="800" r="2"/>
 </g>
-<g fill="#fff" filter="url(#glow)">
-<circle cx="82" cy="92" r="2"/><circle cx="185" cy="300" r="1.5"/><circle cx="330" cy="125" r="2"/><circle cx="470" cy="205" r="1.5"/><circle cx="585" cy="90" r="2"/><circle cx="730" cy="170" r="1.5"/><circle cx="900" cy="90" r="2"/><circle cx="1040" cy="210" r="1.5"/><circle cx="1190" cy="105" r="2"/><circle cx="1350" cy="250" r="1.5"/><circle cx="1510" cy="120" r="2"/><circle cx="70" cy="610" r="1.5"/><circle cx="240" cy="760" r="2"/><circle cx="390" cy="600" r="1.5"/><circle cx="540" cy="800" r="2"/><circle cx="690" cy="690" r="1.5"/><circle cx="920" cy="790" r="2"/><circle cx="1090" cy="650" r="1.5"/><circle cx="1260" cy="770" r="2"/><circle cx="1430" cy="590" r="1.5"/><circle cx="1530" cy="820" r="2"/>
+<!-- clean purple black hole -->
+<g transform="translate(800 455)">
+<!-- soft outer glow -->
+<ellipse rx="365" ry="112" fill="none" stroke="#7625df" stroke-width="28" opacity=".18" filter="url(#soft)"/>
+<!-- single clean accretion disk -->
+<ellipse rx="330" ry="102" fill="none" stroke="#5215b5" stroke-width="22" opacity=".75"/>
+<ellipse rx="305" ry="94" fill="none" stroke="url(#ring)" stroke-width="13" filter="url(#glow)"/>
+<ellipse rx="275" ry="84" fill="none" stroke="#d59aff" stroke-width="4" opacity=".85"/>
+<!-- event horizon -->
+<ellipse rx="225" ry="70" fill="#010106"/>
+<ellipse rx="225" ry="70" fill="none" stroke="#8f3cff" stroke-width="3" opacity=".8"/>
+<circle r="112" fill="#000"/>
+<circle r="108" fill="#010005"/>
+<!-- small clean highlight -->
+<ellipse rx="315" ry="96" fill="none" stroke="#f0c8ff" stroke-width="2" opacity=".55"/>
 </g>
-<g transform="translate(800 455)" filter="url(#glow)">
-<!-- elegant outer orbital arcs -->
-<ellipse rx="410" ry="132" fill="none" stroke="#6b20d8" stroke-width="3" opacity=".45" transform="rotate(-7)"/>
-<ellipse rx="375" ry="120" fill="none" stroke="#a64cff" stroke-width="5" opacity=".55" transform="rotate(-7)"/>
-<ellipse rx="345" ry="110" fill="none" stroke="url(#ring)" stroke-width="18" opacity=".8" transform="rotate(-7)"/>
-<ellipse rx="315" ry="100" fill="none" stroke="#e4adff" stroke-width="5" opacity=".95" transform="rotate(-7)"/>
-<!-- dark center -->
-<ellipse rx="250" ry="82" fill="#020106"/>
-<ellipse rx="250" ry="82" fill="none" stroke="#8b32ff" stroke-width="7" opacity=".75"/>
-<ellipse rx="215" ry="70" fill="none" stroke="#4a1495" stroke-width="16" opacity=".65"/>
-<ellipse rx="180" ry="60" fill="#000"/>
-<circle r="118" fill="#000"/>
-<!-- subtle lensing highlight -->
-<ellipse rx="285" ry="91" fill="none" stroke="#f0c8ff" stroke-width="2" opacity=".75" transform="rotate(12)"/>
-</g>
-<g fill="#d9a0ff" filter="url(#glow)">
-<circle cx="490" cy="350" r="3"/><circle cx="1110" cy="560" r="3"/><circle cx="565" cy="625" r="2"/><circle cx="1030" cy="280" r="2"/><circle cx="405" cy="470" r="2"/><circle cx="1200" cy="380" r="2"/>
+<g fill="#c47aff" filter="url(#glow)" opacity=".75">
+<circle cx="500" cy="355" r="2"/><circle cx="1100" cy="550" r="2"/><circle cx="610" cy="610" r="1.5"/><circle cx="1010" cy="300" r="1.5"/>
 </g>
 </svg>
