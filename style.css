@@ -84,3 +84,5 @@ footer{position:relative;z-index:2;text-align:center;color:#766a82;font-size:10p
 .profile-preview span{font-size:38px}
 .upload-button{display:block;width:100%;padding:10px 13px;border-radius:10px;background:linear-gradient(135deg,#9746ff,#6621c9);color:#fff;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 7px 20px rgba(119,45,224,.2)}
 .profile-file{display:none}
+
+.games-icon-button{width:150px;height:58px;margin-top:18px;border:1px solid rgba(180,92,255,.72);border-radius:30px;background:linear-gradient(145deg,rgba(24,7,45,.9),rgba(8,2,18,.82));display:grid;place-items:center;text-decoration:none;box-shadow:0 0 28px rgba(139,62,255,.22),inset 0 1px rgba(255,255,255,.06);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.games-icon-button:hover{transform:translateY(-2px);border-color:#c28aff;box-shadow:0 0 38px rgba(157,76,255,.4),inset 0 1px rgba(255,255,255,.08)}.games-icon-button:focus-visible{outline:2px solid #c28aff;outline-offset:4px}.controller-icon{font-size:30px;line-height:1;filter:drop-shadow(0 0 9px rgba(190,110,255,.85))}@media(max-width:760px){.games-icon-button{width:130px;height:54px}}
