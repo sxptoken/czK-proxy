@@ -89,7 +89,7 @@
       ["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."]
     ];
     const verse=verses[Math.floor(Math.random()*verses.length)],verseOverlay=document.getElementById("verseOverlay");
-    document.getElementById("verseTitle").textContent=verse[0];document.getElementById("verseText").textContent=verse[1];verseOverlay.hidden=false;setTimeout(()=>{verseOverlay.hidden=true},5000);
+    document.getElementById("verseTitle").textContent=verse[0];document.getElementById("verseText").textContent=verse[1];verseOverlay.hidden=false;setTimeout(()=>{verseOverlay.hidden=true},3000);
 
     const settingsButton=document.getElementById("settingsButton"),closeSettings=document.getElementById("closeSettings"),overlay=document.getElementById("settingsOverlay"),wallpaperFile=document.getElementById("wallpaperFile"),clearWallpaper=document.getElementById("clearWallpaper"),panicKey=document.getElementById("panicKey"),panicUrl=document.getElementById("panicUrl"),savePanic=document.getElementById("savePanic"),savedMessage=document.getElementById("savedMessage"),aboutBlankButton=document.getElementById("aboutBlankButton");
     function openSettings(){overlay.hidden=false;panicKey.value=localStorage.getItem("czxPanicKey")||"";panicUrl.value=localStorage.getItem("czxPanicUrl")||""}
