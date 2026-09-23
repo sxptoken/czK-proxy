@@ -6,7 +6,7 @@
     "node": "24.x"
   },
   "scripts": {
-    "build": "node scripts/build-basket-random.mjs && node scripts/build-moto-x3m.mjs"
+    "build": "node scripts/build-basket-random.mjs && node scripts/build-tiny-fishing.mjs"
   },
   "dependencies": {
     "adm-zip": "^0.5.16"
