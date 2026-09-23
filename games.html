@@ -14,7 +14,7 @@
     .games-title h1{margin:0;color:#fff;font-size:28px}
     .games-title h1 span{color:#a865ff}
     .games-title p{margin:9px 0 0;color:#9c91ad;font-size:13px}
-    .basket-game-button{display:block;width:min(220px,100%);margin:0;padding:0;border:0;border-radius:16px;background:transparent;cursor:pointer;box-shadow:0 15px 45px rgba(0,0,0,.35);transition:transform .18s ease,box-shadow .18s ease}.basket-game-button:hover{transform:translateY(-3px);box-shadow:0 20px 55px rgba(0,0,0,.45)}.basket-game-button:focus-visible{outline:2px solid #a865ff;outline-offset:5px}.basket-image-only{width:100%;border-radius:16px;overflow:hidden}.basket-image-only img{display:block;width:100%;height:auto}.play-hint{text-align:center;margin:12px 0 0;color:#bca9d1;font-size:12px}.game-player{margin:24px 0 0;border:1px solid rgba(125,50,245,.45);border-radius:16px;overflow:hidden;background:#000}.player-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 15px;background:rgba(15,7,29,.96)}.player-header strong{font-size:13px}.close-game{border:0;border-radius:9px;background:#261832;color:#ddd;padding:8px 11px;cursor:pointer;font:inherit;font-size:11px;font-weight:800}.game-frame{display:block;width:100%;height:min(68vh,650px);border:0;background:#000}.game-note{padding:10px 14px;color:#776b84;font-size:10px;background:rgba(8,3,16,.96)}
+    .moto-game-button{display:block;width:min(220px,100%);margin:22px 0 0;padding:0;border:0;border-radius:16px;background:transparent;cursor:pointer;text-align:left}.moto-image{height:130px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#19111f,#08040f);border:1px solid rgba(137,58,255,.45);box-shadow:0 15px 45px rgba(0,0,0,.35)}.moto-logo{font-weight:900;font-size:22px;color:#fff;letter-spacing:1px}.moto-game-button:hover{transform:translateY(-3px)}.moto-game-button:focus-visible{outline:2px solid #a865ff;outline-offset:5px}.basket-game-button{display:block;width:min(220px,100%);margin:0;padding:0;border:0;border-radius:16px;background:transparent;cursor:pointer;box-shadow:0 15px 45px rgba(0,0,0,.35);transition:transform .18s ease,box-shadow .18s ease}.basket-game-button:hover{transform:translateY(-3px);box-shadow:0 20px 55px rgba(0,0,0,.45)}.basket-game-button:focus-visible{outline:2px solid #a865ff;outline-offset:5px}.basket-image-only{width:100%;border-radius:16px;overflow:hidden}.basket-image-only img{display:block;width:100%;height:auto}.play-hint{text-align:center;margin:12px 0 0;color:#bca9d1;font-size:12px}.game-player{margin:24px 0 0;border:1px solid rgba(125,50,245,.45);border-radius:16px;overflow:hidden;background:#000}.player-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 15px;background:rgba(15,7,29,.96)}.player-header strong{font-size:13px}.close-game{border:0;border-radius:9px;background:#261832;color:#ddd;padding:8px 11px;cursor:pointer;font:inherit;font-size:11px;font-weight:800}.game-frame{display:block;width:100%;height:min(68vh,650px);border:0;background:#000}.game-note{padding:10px 14px;color:#776b84;font-size:10px;background:rgba(8,3,16,.96)}
     @media(max-width:600px){.game-frame{height:70vh}}
   </style>
   <!-- Vercel redeploy trigger - latest games layout -->
@@ -44,6 +44,15 @@
                   <div class="player-header"><strong>🏀 Basket Random</strong><button class="close-game" id="closeGame" type="button">Close Game</button></div>
                   <iframe class="game-frame" id="gameFrame" title="Basket Random" src="about:blank"></iframe>
                   <div class="game-note">Basket Random runs from the game files installed during the Vercel build.</div>
+                </div>
+        
+                <button class="moto-game-button" id="motoX3mCard" type="button" aria-label="Play Moto X3M">
+                  <div class="moto-image"><div class="moto-logo">🏍️ MOTO X3M</div></div>
+                  <div class="play-hint">Click to play</div>
+                </button>
+                <div class="game-player" id="motoGamePlayer" hidden>
+                  <div class="player-header"><strong>🏍️ Moto X3M</strong><button class="close-game" id="closeMotoGame" type="button">Close Game</button></div>
+                  <iframe class="game-frame" id="motoGameFrame" title="Moto X3M" src="about:blank"></iframe>
                 </div>
         </div>
       </div>
@@ -89,6 +98,15 @@
     }
     basketRandomCard.addEventListener("click",openBasketRandom);
     closeGame.addEventListener("click",closeBasketRandom);
+
+    const motoX3mCard=document.getElementById("motoX3mCard");
+    const motoGamePlayer=document.getElementById("motoGamePlayer");
+    const motoGameFrame=document.getElementById("motoGameFrame");
+    const closeMotoGame=document.getElementById("closeMotoGame");
+    function openMotoX3M(){motoGameFrame.src="/games/moto-x3m/index.html";motoGamePlayer.hidden=false;motoGamePlayer.scrollIntoView({behavior:"smooth",block:"start"});}
+    function closeMotoX3M(){motoGameFrame.src="about:blank";motoGamePlayer.hidden=true;}
+    motoX3mCard.addEventListener("click",openMotoX3M);
+    closeMotoGame.addEventListener("click",closeMotoX3M);
 
     const savedWallpaper=localStorage.getItem("czxWallpaper");
     if(savedWallpaper){document.body.style.backgroundImage=`url("${savedWallpaper}")`;document.body.classList.add("custom-wallpaper");}
