@@ -41,6 +41,16 @@ fs.rmSync(tempZip, { force: true });
 const indexPath = path.join(outputDir, "index.html");
 if (!fs.existsSync(indexPath)) throw new Error("Moto X3M index.html was not found.");
 
+// The upstream repository currently contains an empty placeholder for the
+// main game bundle. Restore the actual game bundle before serving the game.
+const gameBundleUrl = "https://cdn.jsdelivr.net/gh/bodrumkat/hardes1/motox3m4.min.js";
+const gameBundlePath = path.join(outputDir, "motox3m4.min.js");
+const bundleResponse = await fetch(gameBundleUrl);
+if (!bundleResponse.ok) throw new Error("Moto X3M game bundle download failed: HTTP " + bundleResponse.status);
+const gameBundle = Buffer.from(await bundleResponse.arrayBuffer());
+if (gameBundle.length < 500000) throw new Error("Moto X3M game bundle is unexpectedly small.");
+fs.writeFileSync(gameBundlePath, gameBundle);
+
 let html = fs.readFileSync(indexPath, "utf8");
 
 // Keep the game's required local engine files. Only remove third-party
