@@ -62,9 +62,9 @@
       </div>
 
       <div class="setting">
-        <label>IXL</label>
-        <p>Open IXL in a separate about:blank tab.</p>
-        <button class="save-button" id="ixlButton" type="button">Open IXL</button>
+        <label>About:blank</label>
+        <p>Open czX inside a separate about:blank tab.</p>
+        <button class="save-button" id="aboutBlankButton" type="button">Open about:blank</button>
       </div>
 
       <div class="setting">
@@ -103,7 +103,7 @@
     const panicUrl=document.getElementById("panicUrl");
     const savePanic=document.getElementById("savePanic");
     const savedMessage=document.getElementById("savedMessage");
-    const ixlButton=document.getElementById("ixlButton");
+    const aboutBlankButton=document.getElementById("aboutBlankButton");
 
     function openSettings(){
       overlay.hidden=false;
@@ -140,16 +140,16 @@
       wallpaperFile.value="";
     });
 
-    ixlButton.addEventListener("click",()=>{
+    aboutBlankButton.addEventListener("click",()=>{
       const blank=window.open("about:blank","_blank");
       if(!blank){
-        savedMessage.textContent="Allow pop-ups for IXL to use this.";
+        savedMessage.textContent="Allow pop-ups for czX to use this.";
         return;
       }
       blank.document.open();
-      blank.document.write(`<!doctype html><html><head><meta charset="UTF-8"><title>IXL</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff}iframe{display:block;width:100%;height:100%;border:0}</style></head><body><iframe src="https://www.ixl.com/" title="IXL"></iframe></body></html>`);
+      blank.document.write(`<!doctype html><html><head><meta charset="UTF-8"><title>about:blank</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{display:block;width:100%;height:100%;border:0}</style></head><body><iframe src="${location.href}" title="czX"></iframe></body></html>`);
       blank.document.close();
-      savedMessage.textContent="Opened IXL in about:blank.";
+      savedMessage.textContent="Opened in about:blank.";
     });
 
     savePanic.addEventListener("click",()=>{
