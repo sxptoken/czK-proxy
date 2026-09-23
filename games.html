@@ -27,12 +27,7 @@
     .close-game{border:0;border-radius:9px;background:#261832;color:#ddd;padding:8px 11px;cursor:pointer;font:inherit;font-size:11px;font-weight:800}
     .game-frame{display:block;width:100%;height:min(68vh,650px);border:0;background:#000}
     .game-note{padding:10px 14px;color:#776b84;font-size:10px;background:rgba(8,3,16,.96)}
-    @media(max-width:600px){
-      .game-card{align-items:flex-start}
-      .play-button{padding:10px 13px}
-      .game-icon{width:54px;height:54px;flex-basis:54px}
-      .game-frame{height:70vh}
-    }
+    @media(max-width:600px){.game-card{align-items:flex-start}.play-button{padding:10px 13px}.game-icon{width:54px;height:54px;flex-basis:54px}.game-frame{height:70vh}}
   </style>
 </head>
 <body>
@@ -45,7 +40,6 @@
       <a class="nav-link" href="/#settings">⚙ <span>Settings</span></a>
     </nav>
   </header>
-
   <main class="games-page">
     <section class="games-content">
       <div class="games-card">
@@ -53,54 +47,23 @@
           <h1><span>🎮</span> Games</h1>
           <p>Choose a game to play inside czX.</p>
         </div>
-
         <div class="game-card" id="basketRandomCard" role="button" tabindex="0" aria-label="Play Basket Random">
           <div class="game-icon">🏀</div>
-          <div class="game-info">
-            <h2>Basket Random</h2>
-            <p>Play Basket Random directly inside czX.</p>
-          </div>
+          <div class="game-info"><h2>Basket Random</h2><p>Play Basket Random directly inside czX.</p></div>
           <button class="play-button" id="playBasket" type="button">Play →</button>
         </div>
-
-        <div class="game-card" id="motoX3mCard" role="button" tabindex="0" aria-label="Play Moto X3M">
-          <div class="game-icon">🏍️</div>
-          <div class="game-info">
-            <h2>Moto X3M</h2>
-            <p>Race through obstacle courses and perform bike flips.</p>
-          </div>
-          <button class="play-button" id="playMotoX3m" type="button">Play →</button>
-        </div>
-
         <div class="game-player" id="gamePlayer" hidden>
-          <div class="player-header">
-            <strong>🏀 Basket Random</strong>
-            <button class="close-game" id="closeGame" type="button">Close</button>
-          </div>
-          <iframe
-            class="game-frame"
-            id="gameFrame"
-            title="Basket Random"
-            src="about:blank"
-            loading="lazy"
-            allow="autoplay; fullscreen"
-          ></iframe>
+          <div class="player-header"><strong>🏀 Basket Random</strong><button class="close-game" id="closeGame" type="button">Close</button></div>
+          <iframe class="game-frame" id="gameFrame" title="Basket Random" src="about:blank" loading="lazy" allow="autoplay; fullscreen"></iframe>
           <div class="game-note">The game files are installed into czX during the Vercel build, so the game runs from the czX site.</div>
         </div>
       </div>
     </section>
   </main>
-
   <div class="verse-overlay" id="verseOverlay">
-    <section class="verse-card" role="dialog" aria-modal="true">
-      <div class="verse-label">BIBLE VERSE</div>
-      <h2 id="verseTitle"></h2>
-      <p id="verseText"></p>
-    </section>
+    <section class="verse-card" role="dialog" aria-modal="true"><div class="verse-label">BIBLE VERSE</div><h2 id="verseTitle"></h2><p id="verseText"></p></section>
   </div>
-
   <footer>© 2026 czX. All rights reserved.</footer>
-
   <script>
     const verses=[
       ["John 3:16","For God so loved the world, that he gave his only begotten Son."],
@@ -110,68 +73,27 @@
       ["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."]
     ];
     const verse=verses[Math.floor(Math.random()*verses.length)];
-    const verseOverlay=document.getElementById("verseOverlay");
     document.getElementById("verseTitle").textContent=verse[0];
     document.getElementById("verseText").textContent=verse[1];
-    verseOverlay.hidden=false;
-    setTimeout(()=>{verseOverlay.hidden=true},5000);
+    document.getElementById("verseOverlay").hidden=false;
+    setTimeout(()=>{document.getElementById("verseOverlay").hidden=true},5000);
 
-    const motoX3mCard=document.getElementById("motoX3mCard");
-    const playMotoX3m=document.getElementById("playMotoX3m");
     const basketRandomCard=document.getElementById("basketRandomCard");
     const playBasket=document.getElementById("playBasket");
     const gamePlayer=document.getElementById("gamePlayer");
     const gameFrame=document.getElementById("gameFrame");
     const closeGame=document.getElementById("closeGame");
     const basketRandomUrl="/games/basket-random/index.html";
-    const motoX3mUrl="/games/moto-x3m/index.html";
 
-    function openBasketRandom(){
-      gameFrame.src=basketRandomUrl;
-      gamePlayer.hidden=false;
-      gamePlayer.scrollIntoView({behavior:"smooth",block:"start"});
-    }
-
-    function openMotoX3m(){
-      gameFrame.src=motoX3mUrl;
-      gamePlayer.hidden=false;
-      gamePlayer.scrollIntoView({behavior:"smooth",block:"start"});
-      gamePlayer.querySelector("strong").textContent="🏍️ Moto X3M";
-      gameFrame.title="Moto X3M";
-    }
-
-    function closeBasketRandom(){
-      gameFrame.src="about:blank";
-      gamePlayer.hidden=true;
-    }
-
+    function openBasketRandom(){gameFrame.src=basketRandomUrl;gamePlayer.hidden=false;gamePlayer.scrollIntoView({behavior:"smooth",block:"start"});}
+    function closeBasketRandom(){gameFrame.src="about:blank";gamePlayer.hidden=true;}
     playBasket.addEventListener("click",openBasketRandom);
-    playMotoX3m.addEventListener("click",openMotoX3m);
-    motoX3mCard.addEventListener("click",e=>{
-      if(e.target!==playMotoX3m)openMotoX3m();
-    });
-    motoX3mCard.addEventListener("keydown",e=>{
-      if((e.key==="Enter"||e.key===" ")&&document.activeElement===motoX3mCard){
-        e.preventDefault();
-        openMotoX3m();
-      }
-    });
-    basketRandomCard.addEventListener("click",e=>{
-      if(e.target!==playBasket)openBasketRandom();
-    });
-    basketRandomCard.addEventListener("keydown",e=>{
-      if((e.key==="Enter"||e.key===" ")&&document.activeElement===basketRandomCard){
-        e.preventDefault();
-        openBasketRandom();
-      }
-    });
+    basketRandomCard.addEventListener("click",e=>{if(e.target!==playBasket)openBasketRandom();});
+    basketRandomCard.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&document.activeElement===basketRandomCard){e.preventDefault();openBasketRandom();}});
     closeGame.addEventListener("click",closeBasketRandom);
 
     const savedWallpaper=localStorage.getItem("czxWallpaper");
-    if(savedWallpaper){
-      document.body.style.backgroundImage=`url("${savedWallpaper}")`;
-      document.body.classList.add("custom-wallpaper");
-    }
+    if(savedWallpaper){document.body.style.backgroundImage=`url("${savedWallpaper}")`;document.body.classList.add("custom-wallpaper");}
   </script>
 </body>
 </html>
