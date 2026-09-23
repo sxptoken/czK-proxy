@@ -7,8 +7,13 @@
   <title>czX — Access</title>
   <link rel="stylesheet" href="/style.css">
   <style>
-    body{display:grid;place-items:center;min-height:100vh;padding:24px}
-    .login-card{width:min(430px,100%);padding:32px;border:1px solid rgba(180,90,255,.3);border-radius:24px;background:rgba(10,5,18,.88);box-shadow:0 20px 70px rgba(0,0,0,.45);text-align:center}
+    body{display:grid;place-items:center;min-height:100vh;padding:24px;overflow:hidden}
+    body:before{background:radial-gradient(circle at 50% 30%,rgba(155,70,255,.25),transparent 38%),linear-gradient(180deg,rgba(4,1,10,.1),rgba(4,1,10,.78))}
+    .login-shell{width:min(470px,100%);position:relative}
+    .login-glow{position:absolute;inset:-35px;border-radius:40px;background:radial-gradient(circle,rgba(142,57,255,.2),transparent 68%);filter:blur(20px);pointer-events:none}
+    .login-card{position:relative}
+
+    .login-card{width:min(430px,100%);padding:36px;border:1px solid rgba(180,90,255,.36);border-radius:26px;background:rgba(10,5,18,.88);box-shadow:0 20px 70px rgba(0,0,0,.45);text-align:center}
     .login-card h1{margin:0 0 8px}
     .login-card p{opacity:.7;margin:0 0 24px}
     .login-input{width:100%;box-sizing:border-box;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;outline:none;margin-bottom:12px}
@@ -17,7 +22,7 @@
   </style>
 </head>
 <body>
-  <main class="login-card">
+  <div class="login-shell"><div class="login-glow"></div><main class="login-card">
     <div class="brand" style="justify-content:center;margin-bottom:18px"><span class="brand-star">✦</span><span>czX</span></div>
     <h1>Site Locked</h1>
     <p>Enter the password to access czX.</p>
@@ -26,7 +31,7 @@
       <button class="login-button" type="submit">Enter czX</button>
       <div class="login-error" id="error" aria-live="polite"></div>
     </form>
-  </main>
+  </main></div>
   <script>
     const form=document.getElementById("loginForm");
     const password=document.getElementById("password");
