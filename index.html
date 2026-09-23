@@ -20,25 +20,16 @@
 
   <main class="home">
     <section class="hero-content">
-      <div class="hero-card">
-        <h1>Welcome to <span>czX</span></h1>
-      </div>
+      <div class="hero-card"><h1>Welcome to <span>czX</span></h1></div>
       <a class="quick-card youtube-card" href="/youtube.html" aria-label="Open YouTube">
-        <div class="quick-icon">▶</div>
-        <div class="quick-copy">
-          <h2>YouTube</h2>
-          <p>Watch &amp; search</p>
-        </div>
-        <span class="quick-arrow">→</span>
+        <div class="quick-icon">▶</div><div class="quick-copy"><h2>YouTube</h2><p>Watch &amp; search</p></div><span class="quick-arrow">→</span>
       </a>
     </section>
   </main>
 
   <div class="verse-overlay" id="verseOverlay" hidden>
     <section class="verse-card" role="dialog" aria-modal="true" aria-labelledby="verseTitle">
-      <div class="verse-label">BIBLE VERSE</div>
-      <h2 id="verseTitle"></h2>
-      <p id="verseText"></p>
+      <div class="verse-label">BIBLE VERSE</div><h2 id="verseTitle"></h2><p id="verseText"></p>
     </section>
   </div>
 
@@ -46,67 +37,45 @@
 
   <div class="settings-overlay" id="settingsOverlay" hidden>
     <section class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-      <div class="settings-header">
-        <div>
-          <span class="settings-label">SETTINGS</span>
-          <h2 id="settingsTitle">Customize czX</h2>
-        </div>
-        <button class="close-button" id="closeSettings" type="button" aria-label="Close settings">×</button>
-      </div>
-
+      <div class="settings-header"><div><span class="settings-label">SETTINGS</span><h2 id="settingsTitle">Customize czX</h2></div><button class="close-button" id="closeSettings" type="button" aria-label="Close settings">×</button></div>
       <div class="setting">
-        <label for="wallpaperFile">Wallpaper</label>
-        <p>Each person can set their own wallpaper. It is saved only in that browser.</p>
-        <input id="wallpaperFile" type="file" accept="image/*">
-        <div class="setting-row"><button class="secondary-button" id="clearWallpaper" type="button">Clear wallpaper</button></div>
+        <label for="wallpaperFile">Wallpaper</label><p>Each person can set their own wallpaper. It is saved only in that browser.</p>
+        <input id="wallpaperFile" type="file" accept="image/*"><div class="setting-row"><button class="secondary-button" id="clearWallpaper" type="button">Clear wallpaper</button></div>
       </div>
-
+      <div class="setting"><label>About:blank</label><p>Open czX inside a separate about:blank tab.</p><button class="save-button" id="aboutBlankButton" type="button">Open about:blank</button></div>
       <div class="setting">
-        <label>About:blank</label>
-        <p>Open czX inside a separate about:blank tab.</p>
-        <button class="save-button" id="aboutBlankButton" type="button">Open about:blank</button>
-      </div>
-
-      <div class="setting">
-        <label for="panicKey">Panic key</label>
-        <p>Press the chosen key to immediately open the saved link.</p>
-        <input id="panicKey" class="text-input" type="text" maxlength="1" placeholder="Example: P">
-        <input id="panicUrl" class="text-input" type="url" placeholder="https://example.com">
-        <button class="save-button" id="savePanic" type="button">Save panic key</button>
-        <span class="saved-message" id="savedMessage" aria-live="polite"></span>
+        <label for="panicKey">Panic key</label><p>Press the chosen key to immediately open the saved link.</p>
+        <input id="panicKey" class="text-input" type="text" maxlength="1" placeholder="Example: P"><input id="panicUrl" class="text-input" type="url" placeholder="https://example.com">
+        <button class="save-button" id="savePanic" type="button">Save panic key</button><span class="saved-message" id="savedMessage" aria-live="polite"></span>
       </div>
     </section>
   </div>
 
-
-  <button class="profile-button" id="profileButton" type="button" aria-label="Account">
-    <span id="profileAvatar">👤</span>
-  </button>
+  <button class="profile-button" id="profileButton" type="button" aria-label="Account"><span id="profileAvatar">👤</span></button>
 
   <div class="account-overlay" id="accountOverlay" hidden>
     <section class="account-panel" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
       <button class="close-button account-close" id="closeAccount" type="button" aria-label="Close account">×</button>
       <div class="account-avatar" id="accountAvatar">👤</div>
-      <h2 id="accountTitle">Account</h2>
-      <p class="account-subtitle">Sign in or create an optional czX account.</p>
+      <h2 id="accountTitle">Account</h2><p class="account-subtitle">Sign in or create an optional czX account.</p>
 
       <div id="accountForms">
-        <div class="account-tabs">
-          <button class="account-tab active" id="signInTab" type="button">Sign in</button>
-          <button class="account-tab" id="signUpTab" type="button">Sign up</button>
-        </div>
-
+        <div class="account-tabs"><button class="account-tab active" id="signInTab" type="button">Sign in</button><button class="account-tab" id="signUpTab" type="button">Sign up</button></div>
         <form id="accountForm">
           <input class="text-input" id="accountUsername" type="text" maxlength="24" placeholder="Username" autocomplete="username" required>
           <input class="text-input" id="accountPassword" type="password" maxlength="72" placeholder="Password" autocomplete="current-password" required>
-          <button class="save-button account-submit" id="accountSubmit" type="submit">Sign in</button>
-          <span class="saved-message" id="accountMessage" aria-live="polite"></span>
+          <button class="save-button account-submit" id="accountSubmit" type="submit">Sign in</button><span class="saved-message" id="accountMessage" aria-live="polite"></span>
         </form>
       </div>
 
       <div id="signedInView" hidden>
         <p class="account-welcome">Signed in as <strong id="accountName"></strong></p>
+        <div class="profile-preview" id="profilePreview"><img id="profilePreviewImage" alt="Profile picture preview"><span id="profilePreviewFallback">🙂</span></div>
+        <label class="upload-button" for="profileFile">Choose profile picture</label>
+        <input id="profileFile" class="profile-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+        <button class="secondary-button account-submit" id="removeProfileButton" type="button">Remove profile picture</button>
         <button class="secondary-button account-submit" id="signOutButton" type="button">Sign out</button>
+        <span class="saved-message" id="profileMessage" aria-live="polite"></span>
       </div>
     </section>
   </div>
@@ -119,191 +88,39 @@
       ["Psalm 23:1","The LORD is my shepherd; I shall not want."],
       ["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."]
     ];
+    const verse=verses[Math.floor(Math.random()*verses.length)],verseOverlay=document.getElementById("verseOverlay");
+    document.getElementById("verseTitle").textContent=verse[0];document.getElementById("verseText").textContent=verse[1];verseOverlay.hidden=false;setTimeout(()=>{verseOverlay.hidden=true},5000);
 
-    const verse=verses[Math.floor(Math.random()*verses.length)];
-    const verseOverlay=document.getElementById("verseOverlay");
-    document.getElementById("verseTitle").textContent=verse[0];
-    document.getElementById("verseText").textContent=verse[1];
-    verseOverlay.hidden=false;
-    setTimeout(()=>{verseOverlay.hidden=true},5000);
-
-    const settingsButton=document.getElementById("settingsButton");
-    const closeSettings=document.getElementById("closeSettings");
-    const overlay=document.getElementById("settingsOverlay");
-    const wallpaperFile=document.getElementById("wallpaperFile");
-    const clearWallpaper=document.getElementById("clearWallpaper");
-    const panicKey=document.getElementById("panicKey");
-    const panicUrl=document.getElementById("panicUrl");
-    const savePanic=document.getElementById("savePanic");
-    const savedMessage=document.getElementById("savedMessage");
-    const aboutBlankButton=document.getElementById("aboutBlankButton");
-
-    function openSettings(){
-      overlay.hidden=false;
-      panicKey.value=localStorage.getItem("czxPanicKey")||"";
-      panicUrl.value=localStorage.getItem("czxPanicUrl")||"";
-    }
+    const settingsButton=document.getElementById("settingsButton"),closeSettings=document.getElementById("closeSettings"),overlay=document.getElementById("settingsOverlay"),wallpaperFile=document.getElementById("wallpaperFile"),clearWallpaper=document.getElementById("clearWallpaper"),panicKey=document.getElementById("panicKey"),panicUrl=document.getElementById("panicUrl"),savePanic=document.getElementById("savePanic"),savedMessage=document.getElementById("savedMessage"),aboutBlankButton=document.getElementById("aboutBlankButton");
+    function openSettings(){overlay.hidden=false;panicKey.value=localStorage.getItem("czxPanicKey")||"";panicUrl.value=localStorage.getItem("czxPanicUrl")||""}
     function closeSettingsPanel(){overlay.hidden=true}
-    settingsButton.addEventListener("click",openSettings);
-    closeSettings.addEventListener("click",closeSettingsPanel);
-    overlay.addEventListener("click",e=>{if(e.target===overlay)closeSettingsPanel()});
+    settingsButton.addEventListener("click",openSettings);closeSettings.addEventListener("click",closeSettingsPanel);overlay.addEventListener("click",e=>{if(e.target===overlay)closeSettingsPanel()});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!overlay.hidden){closeSettingsPanel();return}const key=localStorage.getItem("czxPanicKey"),url=localStorage.getItem("czxPanicUrl");if(key&&url&&e.key.toLowerCase()===key.toLowerCase()&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName))window.location.href=url});
+    wallpaperFile.addEventListener("change",()=>{const file=wallpaperFile.files[0];if(!file||!file.type.startsWith("image/"))return;const reader=new FileReader();reader.onload=()=>{localStorage.setItem("czxWallpaper",reader.result);document.body.style.backgroundImage=`url("${reader.result}")`;document.body.classList.add("custom-wallpaper")};reader.readAsDataURL(file)});
+    clearWallpaper.addEventListener("click",()=>{localStorage.removeItem("czxWallpaper");document.body.style.backgroundImage="";document.body.classList.remove("custom-wallpaper");wallpaperFile.value=""});
+    aboutBlankButton.addEventListener("click",()=>{const blank=window.open("about:blank","_blank");if(!blank){savedMessage.textContent="Allow pop-ups for czX to use this.";return}blank.document.open();blank.document.write(`<!doctype html><html><head><meta charset="UTF-8"><title>about:blank</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{display:block;width:100%;height:100%;border:0}</style></head><body><iframe src="${location.href}" title="czX"></iframe></body></html>`);blank.document.close();savedMessage.textContent="Opened in about:blank."});
+    savePanic.addEventListener("click",()=>{const key=panicKey.value.trim().slice(0,1),url=panicUrl.value.trim();if(!key||!url){savedMessage.textContent="Enter both a key and a link.";return}try{const parsed=new URL(url);if(!["http:","https:"].includes(parsed.protocol))throw new Error()}catch{savedMessage.textContent="Enter a valid http or https link.";return}localStorage.setItem("czxPanicKey",key);localStorage.setItem("czxPanicUrl",url);savedMessage.textContent=`Saved: ${key.toUpperCase()} → ${url}`});
 
-    document.addEventListener("keydown",e=>{
-      if(e.key==="Escape"&&!overlay.hidden){closeSettingsPanel();return}
-      const key=localStorage.getItem("czxPanicKey"),url=localStorage.getItem("czxPanicUrl");
-      if(key&&url&&e.key.toLowerCase()===key.toLowerCase()&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName))window.location.href=url;
-    });
-
-    wallpaperFile.addEventListener("change",()=>{
-      const file=wallpaperFile.files[0];
-      if(!file||!file.type.startsWith("image/"))return;
-      const reader=new FileReader();
-      reader.onload=()=>{
-        localStorage.setItem("czxWallpaper",reader.result);
-        document.body.style.backgroundImage=`url("${reader.result}")`;
-        document.body.classList.add("custom-wallpaper");
-      };
-      reader.readAsDataURL(file);
-    });
-
-    clearWallpaper.addEventListener("click",()=>{
-      localStorage.removeItem("czxWallpaper");
-      document.body.style.backgroundImage="";
-      document.body.classList.remove("custom-wallpaper");
-      wallpaperFile.value="";
-    });
-
-    aboutBlankButton.addEventListener("click",()=>{
-      const blank=window.open("about:blank","_blank");
-      if(!blank){
-        savedMessage.textContent="Allow pop-ups for czX to use this.";
-        return;
-      }
-      blank.document.open();
-      blank.document.write(`<!doctype html><html><head><meta charset="UTF-8"><title>about:blank</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{display:block;width:100%;height:100%;border:0}</style></head><body><iframe src="${location.href}" title="czX"></iframe></body></html>`);
-      blank.document.close();
-      savedMessage.textContent="Opened in about:blank.";
-    });
-
-    savePanic.addEventListener("click",()=>{
-      const key=panicKey.value.trim().slice(0,1),url=panicUrl.value.trim();
-      if(!key||!url){savedMessage.textContent="Enter both a key and a link.";return}
-      try{
-        const parsed=new URL(url);
-        if(!["http:","https:"].includes(parsed.protocol))throw new Error();
-      }catch{
-        savedMessage.textContent="Enter a valid http or https link.";
-        return;
-      }
-      localStorage.setItem("czxPanicKey",key);
-      localStorage.setItem("czxPanicUrl",url);
-      savedMessage.textContent=`Saved: ${key.toUpperCase()} → ${url}`;
-    });
-
-    const profileButton=document.getElementById("profileButton");
-    const profileAvatar=document.getElementById("profileAvatar");
-    const accountOverlay=document.getElementById("accountOverlay");
-    const closeAccount=document.getElementById("closeAccount");
-    const accountForm=document.getElementById("accountForm");
-    const accountUsername=document.getElementById("accountUsername");
-    const accountPassword=document.getElementById("accountPassword");
-    const accountMessage=document.getElementById("accountMessage");
-    const accountSubmit=document.getElementById("accountSubmit");
-    const signInTab=document.getElementById("signInTab");
-    const signUpTab=document.getElementById("signUpTab");
-    const accountForms=document.getElementById("accountForms");
-    const signedInView=document.getElementById("signedInView");
-    const accountName=document.getElementById("accountName");
-    const signOutButton=document.getElementById("signOutButton");
-    const accountAvatar=document.getElementById("accountAvatar");
-
+    const profileButton=document.getElementById("profileButton"),profileAvatar=document.getElementById("profileAvatar"),accountOverlay=document.getElementById("accountOverlay"),closeAccount=document.getElementById("closeAccount"),accountForm=document.getElementById("accountForm"),accountUsername=document.getElementById("accountUsername"),accountPassword=document.getElementById("accountPassword"),accountMessage=document.getElementById("accountMessage"),accountSubmit=document.getElementById("accountSubmit"),signInTab=document.getElementById("signInTab"),signUpTab=document.getElementById("signUpTab"),accountForms=document.getElementById("accountForms"),signedInView=document.getElementById("signedInView"),accountName=document.getElementById("accountName"),signOutButton=document.getElementById("signOutButton"),accountAvatar=document.getElementById("accountAvatar"),profileFile=document.getElementById("profileFile"),profilePreviewImage=document.getElementById("profilePreviewImage"),profilePreviewFallback=document.getElementById("profilePreviewFallback"),removeProfileButton=document.getElementById("removeProfileButton"),profileMessage=document.getElementById("profileMessage");
     let accountMode="signin";
-
-    function getStoredAccount(){
-      try{return JSON.parse(localStorage.getItem("czxAccount")||"null")}catch{return null}
-    }
-
+    function getStoredAccount(){try{return JSON.parse(localStorage.getItem("czxAccount")||"null")}catch{return null}}
     function updateAccountUI(){
-      const account=getStoredAccount();
+      const account=getStoredAccount(),pfp=localStorage.getItem("czxProfilePicture");
       if(account){
-        profileAvatar.textContent="🙂";
-        accountAvatar.textContent="🙂";
-        accountForms.hidden=true;
-        signedInView.hidden=false;
-        accountName.textContent=account.username;
-      }else{
-        profileAvatar.textContent="👤";
-        accountAvatar.textContent="👤";
-        accountForms.hidden=false;
-        signedInView.hidden=true;
-      }
+        profileAvatar.innerHTML=pfp?`<img src="${pfp}" alt="" />`:"🙂";accountAvatar.innerHTML=pfp?`<img src="${pfp}" alt="" />`:"🙂";accountForms.hidden=true;signedInView.hidden=false;accountName.textContent=account.username;
+        profilePreviewImage.src=pfp||"";profilePreviewImage.hidden=!pfp;profilePreviewFallback.hidden=!!pfp;
+      }else{profileAvatar.textContent="👤";accountAvatar.textContent="👤";accountForms.hidden=false;signedInView.hidden=true}
     }
-
-    function openAccount(){
-      accountOverlay.hidden=false;
-      accountMessage.textContent="";
-      accountPassword.value="";
-      updateAccountUI();
-    }
-
-    profileButton.addEventListener("click",openAccount);
-    closeAccount.addEventListener("click",()=>{accountOverlay.hidden=true});
-    accountOverlay.addEventListener("click",e=>{if(e.target===accountOverlay)accountOverlay.hidden=true});
-
-    function setAccountMode(mode){
-      accountMode=mode;
-      signInTab.classList.toggle("active",mode==="signin");
-      signUpTab.classList.toggle("active",mode==="signup");
-      accountSubmit.textContent=mode==="signin"?"Sign in":"Sign up";
-      accountPassword.autocomplete=mode==="signin"?"current-password":"new-password";
-      accountMessage.textContent="";
-    }
-
-    signInTab.addEventListener("click",()=>setAccountMode("signin"));
-    signUpTab.addEventListener("click",()=>setAccountMode("signup"));
-
-    accountForm.addEventListener("submit",e=>{
-      e.preventDefault();
-      const username=accountUsername.value.trim();
-      const password=accountPassword.value;
-      if(username.length<2){accountMessage.textContent="Username must be at least 2 characters.";return}
-      if(password.length<4){accountMessage.textContent="Password must be at least 4 characters.";return}
-
-      const existing=getStoredAccount();
-
-      if(accountMode==="signup"){
-        if(existing){accountMessage.textContent="An account is already saved on this browser.";return}
-        localStorage.setItem("czxAccount",JSON.stringify({username,password}));
-        accountMessage.textContent="Account created.";
-        updateAccountUI();
-        return;
-      }
-
-      if(!existing || existing.username!==username || existing.password!==password){
-        accountMessage.textContent="Incorrect username or password.";
-        return;
-      }
-
-      accountMessage.textContent="Signed in.";
-      updateAccountUI();
-    });
-
-    signOutButton.addEventListener("click",()=>{
-      localStorage.removeItem("czxAccount");
-      accountUsername.value="";
-      accountPassword.value="";
-      setAccountMode("signin");
-      updateAccountUI();
-    });
-
-    setAccountMode("signin");
-    updateAccountUI();
-
-    const savedWallpaper=localStorage.getItem("czxWallpaper");
-    if(savedWallpaper){
-      document.body.style.backgroundImage=`url("${savedWallpaper}")`;
-      document.body.classList.add("custom-wallpaper");
-    }
+    function openAccount(){accountOverlay.hidden=false;accountMessage.textContent="";accountPassword.value="";profileMessage.textContent="";updateAccountUI()}
+    profileButton.addEventListener("click",openAccount);closeAccount.addEventListener("click",()=>{accountOverlay.hidden=true});accountOverlay.addEventListener("click",e=>{if(e.target===accountOverlay)accountOverlay.hidden=true});
+    function setAccountMode(mode){accountMode=mode;signInTab.classList.toggle("active",mode==="signin");signUpTab.classList.toggle("active",mode==="signup");accountSubmit.textContent=mode==="signin"?"Sign in":"Sign up";accountPassword.autocomplete=mode==="signin"?"current-password":"new-password";accountMessage.textContent=""}
+    signInTab.addEventListener("click",()=>setAccountMode("signin"));signUpTab.addEventListener("click",()=>setAccountMode("signup"));
+    accountForm.addEventListener("submit",e=>{e.preventDefault();const username=accountUsername.value.trim(),password=accountPassword.value;if(username.length<2){accountMessage.textContent="Username must be at least 2 characters.";return}if(password.length<4){accountMessage.textContent="Password must be at least 4 characters.";return}const existing=getStoredAccount();if(accountMode==="signup"){if(existing){accountMessage.textContent="An account is already saved on this browser.";return}localStorage.setItem("czxAccount",JSON.stringify({username,password}));accountMessage.textContent="Account created.";updateAccountUI();return}if(!existing||existing.username!==username||existing.password!==password){accountMessage.textContent="Incorrect username or password.";return}accountMessage.textContent="Signed in.";updateAccountUI()});
+    profileFile.addEventListener("change",()=>{const file=profileFile.files[0];if(!file||!file.type.startsWith("image/"))return;if(file.size>3*1024*1024){profileMessage.textContent="Profile picture must be 3 MB or smaller.";profileFile.value="";return}const reader=new FileReader();reader.onload=()=>{localStorage.setItem("czxProfilePicture",reader.result);profileMessage.textContent="Profile picture saved.";updateAccountUI()};reader.readAsDataURL(file)});
+    removeProfileButton.addEventListener("click",()=>{localStorage.removeItem("czxProfilePicture");profileFile.value="";profileMessage.textContent="Profile picture removed.";updateAccountUI()});
+    signOutButton.addEventListener("click",()=>{localStorage.removeItem("czxAccount");accountUsername.value="";accountPassword.value="";setAccountMode("signin");updateAccountUI()});
+    setAccountMode("signin");updateAccountUI();
+    const savedWallpaper=localStorage.getItem("czxWallpaper");if(savedWallpaper){document.body.style.backgroundImage=`url("${savedWallpaper}")`;document.body.classList.add("custom-wallpaper")}
   </script>
 </body>
 </html>
