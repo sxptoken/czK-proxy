@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-
 export default function middleware(request) {
-  const { pathname, search } = request.nextUrl;
+  const url = new URL(request.url);
+  const pathname = url.pathname;
 
   if (
     pathname === "/login.html" ||
@@ -9,16 +8,18 @@ export default function middleware(request) {
     pathname.startsWith("/_next/") ||
     pathname === "/favicon.ico"
   ) {
-    return NextResponse.next();
+    return;
   }
 
-  const authenticated = request.cookies.get("czx_auth")?.value === "1";
-  if (authenticated) return NextResponse.next();
+  const cookie = request.headers.get("cookie") || "";
+  const authenticated = /(?:^|;\s*)czx_auth=1(?:;|$)/.test(cookie);
+  if (authenticated) return;
 
   const loginUrl = new URL("/login.html", request.url);
-  const next = pathname + search;
+  const next = pathname + url.search;
   if (next !== "/") loginUrl.searchParams.set("next", next);
-  return NextResponse.redirect(loginUrl);
+
+  return Response.redirect(loginUrl);
 }
 
 export const config = {
