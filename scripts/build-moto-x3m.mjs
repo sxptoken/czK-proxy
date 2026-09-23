@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import AdmZip from "adm-zip";
 
-const ZIP_URL = "https://github.com/silvereengames/moto-x3m/archive/refs/heads/main.zip";
+const ZIP_URL = "https://github.com/Masterhtml1/Moto-X3Mh/archive/refs/heads/main.zip";
 const outputDir = path.resolve("games/moto-x3m");
 const tempZip = path.resolve(".moto-x3m.zip");
 
