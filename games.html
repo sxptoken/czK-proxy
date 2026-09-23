@@ -37,14 +37,14 @@
           <p>Choose a game to play inside czX.</p>
         </div>
                 <div class="games-card-row">
-                <div class="basket-game-button" id="basketRandomCard" role="button" tabindex="0" aria-label="Play Basket Random">
+                <a class="basket-game-button" href="/basket-random.html" aria-label="Play Basket Random">
                   <div class="basket-image-only"><img src="https://raw.githubusercontent.com/DP321827/topvaz.github.io/main/images/basket-random.webp" alt="Basket Random"></div>
                   <div class="play-hint">Click to play</div>
-                </div>
-                <button class="tiny-fishing-game-button" id="tinyFishingCard" type="button" aria-label="Play Tiny Fishing">
+                </a>
+                <a class="tiny-fishing-game-button" id="tinyFishingCard" href="/tiny-fishing.html" aria-label="Play Tiny Fishing">
                   <div class="tiny-fishing-image"><img src="/games/tiny-fishing/tiny-fishing.png" alt="Tiny Fishing"></div>
                   <div class="play-hint">Click to play</div>
-                </button>
+                </a>
                 <div class="game-player" id="tinyFishingPlayer" hidden>
                   <div class="player-header"><strong>🎣 Tiny Fishing</strong><button class="close-game" id="closeTinyFishing" type="button">Close Game</button></div>
                   <iframe class="game-frame" id="tinyFishingFrame" title="Tiny Fishing" src="about:blank"></iframe>
@@ -83,36 +83,7 @@
       verseOverlay.hidden=true;
     }
 
-    const tinyFishingCard=document.getElementById("tinyFishingCard");
-    const tinyFishingPlayer=document.getElementById("tinyFishingPlayer");
-    const tinyFishingFrame=document.getElementById("tinyFishingFrame");
-    const closeTinyFishing=document.getElementById("closeTinyFishing");
-    function openTinyFishing(){tinyFishingFrame.src="/games/tiny-fishing/index.html";tinyFishingPlayer.hidden=false;tinyFishingPlayer.scrollIntoView({behavior:"smooth",block:"start"});}
-    function closeTinyFishingGame(){tinyFishingFrame.src="about:blank";tinyFishingPlayer.hidden=true;}
-    tinyFishingCard.addEventListener("click",openTinyFishing);
-    closeTinyFishing.addEventListener("click",closeTinyFishingGame);
-
-    const basketRandomCard=document.getElementById("basketRandomCard");
-    const gamePlayer=document.getElementById("gamePlayer");
-    const gameFrame=document.getElementById("gameFrame");
-    const closeGame=document.getElementById("closeGame");
-    const basketRandomUrl="/games/basket-random/index.html";
-
-    function openBasketRandom(){
-      gameFrame.src=basketRandomUrl;
-      gamePlayer.hidden=false;
-      gamePlayer.scrollIntoView({behavior:"smooth",block:"start"});
-    }
-    function closeBasketRandom(){
-      gameFrame.src="about:blank";
-      gamePlayer.hidden=true;
-    }
-    basketRandomCard.addEventListener("click",openBasketRandom);
-    basketRandomCard.addEventListener("keydown",(event)=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openBasketRandom();}});
-    closeGame.addEventListener("click",closeBasketRandom);
-
-
-    const savedWallpaper=localStorage.getItem("czxWallpaper");
+const savedWallpaper=localStorage.getItem("czxWallpaper");
     if(savedWallpaper){document.body.style.backgroundImage=`url("${savedWallpaper}")`;document.body.classList.add("custom-wallpaper");}
   </script>
 </body>
