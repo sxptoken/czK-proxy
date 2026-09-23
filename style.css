@@ -37,3 +37,20 @@ footer{position:relative;z-index:2;text-align:center;color:#766a82;font-size:10p
 .verse-overlay[hidden]{display:none}
 .verse-card{width:min(520px,100%);padding:30px;border:1px solid rgba(153,77,255,.45);border-radius:24px;background:linear-gradient(145deg,rgba(19,8,35,.98),rgba(9,4,18,.98));box-shadow:0 30px 90px rgba(0,0,0,.6);text-align:center}
 .verse-label{color:#a36aff;font-size:9px;font-weight:900;letter-spacing:2px}.verse-card h2{margin:8px 0 14px;font-size:24px;color:#fff}.verse-card p{margin:0 auto 22px;max-width:440px;color:#c5bbd0;font-size:14px;line-height:1.7;font-style:italic}
+
+.profile-button{position:fixed;right:22px;bottom:22px;z-index:15;width:52px;height:52px;border:1px solid rgba(170,92,255,.38);border-radius:50%;background:linear-gradient(145deg,rgba(29,12,48,.96),rgba(10,4,21,.96));color:#fff;display:grid;place-items:center;font-size:22px;cursor:pointer;box-shadow:0 12px 35px rgba(0,0,0,.4),0 0 24px rgba(126,48,240,.18);transition:transform .18s,border-color .18s,box-shadow .18s}
+.profile-button:hover{transform:translateY(-2px) scale(1.03);border-color:rgba(190,119,255,.72);box-shadow:0 15px 40px rgba(0,0,0,.45),0 0 30px rgba(126,48,240,.3)}
+.account-overlay{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px;background:rgba(4,1,10,.72);backdrop-filter:blur(14px)}
+.account-overlay[hidden]{display:none}
+.account-panel{position:relative;width:min(390px,100%);padding:30px;border:1px solid rgba(153,77,255,.45);border-radius:24px;background:linear-gradient(145deg,rgba(19,8,35,.98),rgba(9,4,18,.98));box-shadow:0 30px 90px rgba(0,0,0,.6);text-align:center}
+.account-close{position:absolute;right:18px;top:18px}
+.account-avatar{width:76px;height:76px;margin:4px auto 15px;border:1px solid rgba(170,92,255,.35);border-radius:50%;display:grid;place-items:center;background:#140b20;font-size:34px}
+.account-panel h2{margin:0;color:#fff;font-size:24px}
+.account-subtitle{margin:7px 0 20px;color:#91869e;font-size:12px}
+.account-tabs{display:flex;gap:7px;margin-bottom:12px}
+.account-tab{flex:1;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px;background:#160d20;color:#91869e;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.account-tab.active{background:linear-gradient(135deg,rgba(151,70,255,.3),rgba(102,33,201,.18));border-color:rgba(153,77,255,.4);color:#fff}
+.account-submit{width:100%;margin-top:2px}
+.account-welcome{margin:15px 0;color:#b9adca;font-size:13px}
+.account-welcome strong{color:#fff}
+@media(max-width:600px){.profile-button{right:15px;bottom:15px;width:48px;height:48px}.account-panel{padding:25px}}
