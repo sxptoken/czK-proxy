@@ -11,9 +11,11 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Invalid password" });
     }
 
+    // Session-only cookie: access is not remembered for a week.
+    // Closing the browser ends the authenticated session.
     res.setHeader(
       "Set-Cookie",
-      "czx_auth=1; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800"
+      "czx_auth=1; Path=/; HttpOnly; Secure; SameSite=Lax"
     );
     return res.status(200).json({ ok: true });
   } catch {
