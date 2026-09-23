@@ -38,6 +38,7 @@
         <label for="wallpaperFile">Wallpaper</label><p>Each person can set their own wallpaper. It is saved only in that browser.</p>
         <input id="wallpaperFile" type="file" accept="image/*"><div class="setting-row"><button class="secondary-button" id="clearWallpaper" type="button">Clear wallpaper</button></div>
       </div>
+      <div class="setting"><label>Bible verses</label><p>Show a Bible verse when opening the site.</p><button class="save-button" id="verseToggleButton" type="button">Disable verses</button></div>
       <div class="setting"><label>About:blank</label><p>Open czX inside a separate about:blank tab.</p><button class="save-button" id="aboutBlankButton" type="button">Open about:blank</button></div>
       <div class="setting">
         <label for="panicKey">Panic key</label><p>Press the chosen key to immediately open the saved link.</p>
@@ -85,7 +86,12 @@
       ["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."]
     ];
     const verse=verses[Math.floor(Math.random()*verses.length)],verseOverlay=document.getElementById("verseOverlay");
-    document.getElementById("verseTitle").textContent=verse[0];document.getElementById("verseText").textContent=verse[1];verseOverlay.hidden=false;setTimeout(()=>{verseOverlay.hidden=true},3000);
+    if(localStorage.getItem("czxVersesDisabled")!=="1"){document.getElementById("verseTitle").textContent=verse[0];document.getElementById("verseText").textContent=verse[1];verseOverlay.hidden=false;setTimeout(()=>{verseOverlay.hidden=true},3000);}else{verseOverlay.hidden=true;}
+
+    const verseToggleButton=document.getElementById("verseToggleButton");
+    function updateVerseSetting(){verseToggleButton.textContent=localStorage.getItem("czxVersesDisabled")==="1"?"Enable verses":"Disable verses"}
+    verseToggleButton.addEventListener("click",()=>{const disabled=localStorage.getItem("czxVersesDisabled")==="1";localStorage.setItem("czxVersesDisabled",disabled?"0":"1");updateVerseSetting();savedMessage.textContent=disabled?"Bible verses enabled.":"Bible verses disabled.";});
+    updateVerseSetting();
 
     const settingsButton=document.getElementById("settingsButton"),closeSettings=document.getElementById("closeSettings"),overlay=document.getElementById("settingsOverlay"),wallpaperFile=document.getElementById("wallpaperFile"),clearWallpaper=document.getElementById("clearWallpaper"),panicKey=document.getElementById("panicKey"),panicUrl=document.getElementById("panicUrl"),savePanic=document.getElementById("savePanic"),savedMessage=document.getElementById("savedMessage"),aboutBlankButton=document.getElementById("aboutBlankButton");
     function openSettings(){overlay.hidden=false;panicKey.value=localStorage.getItem("czxPanicKey")||"";panicUrl.value=localStorage.getItem("czxPanicUrl")||""}
