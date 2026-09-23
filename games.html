@@ -63,6 +63,15 @@
           <button class="play-button" id="playBasket" type="button">Play →</button>
         </div>
 
+        <div class="game-card" id="motoX3mCard" role="button" tabindex="0" aria-label="Play Moto X3M">
+          <div class="game-icon">🏍️</div>
+          <div class="game-info">
+            <h2>Moto X3M</h2>
+            <p>Race through obstacle courses and perform bike flips.</p>
+          </div>
+          <button class="play-button" id="playMotoX3m" type="button">Play →</button>
+        </div>
+
         <div class="game-player" id="gamePlayer" hidden>
           <div class="player-header">
             <strong>🏀 Basket Random</strong>
@@ -107,17 +116,28 @@
     verseOverlay.hidden=false;
     setTimeout(()=>{verseOverlay.hidden=true},5000);
 
+    const motoX3mCard=document.getElementById("motoX3mCard");
+    const playMotoX3m=document.getElementById("playMotoX3m");
     const basketRandomCard=document.getElementById("basketRandomCard");
     const playBasket=document.getElementById("playBasket");
     const gamePlayer=document.getElementById("gamePlayer");
     const gameFrame=document.getElementById("gameFrame");
     const closeGame=document.getElementById("closeGame");
     const basketRandomUrl="/games/basket-random/index.html";
+    const motoX3mUrl="/games/moto-x3m/index.html";
 
     function openBasketRandom(){
       gameFrame.src=basketRandomUrl;
       gamePlayer.hidden=false;
       gamePlayer.scrollIntoView({behavior:"smooth",block:"start"});
+    }
+
+    function openMotoX3m(){
+      gameFrame.src=motoX3mUrl;
+      gamePlayer.hidden=false;
+      gamePlayer.scrollIntoView({behavior:"smooth",block:"start"});
+      gamePlayer.querySelector("strong").textContent="🏍️ Moto X3M";
+      gameFrame.title="Moto X3M";
     }
 
     function closeBasketRandom(){
@@ -126,6 +146,16 @@
     }
 
     playBasket.addEventListener("click",openBasketRandom);
+    playMotoX3m.addEventListener("click",openMotoX3m);
+    motoX3mCard.addEventListener("click",e=>{
+      if(e.target!==playMotoX3m)openMotoX3m();
+    });
+    motoX3mCard.addEventListener("keydown",e=>{
+      if((e.key==="Enter"||e.key===" ")&&document.activeElement===motoX3mCard){
+        e.preventDefault();
+        openMotoX3m();
+      }
+    });
     basketRandomCard.addEventListener("click",e=>{
       if(e.target!==playBasket)openBasketRandom();
     });
