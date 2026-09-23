@@ -53,6 +53,12 @@
         <div class="setting-row"><button class="secondary-button" id="clearWallpaper" type="button">Clear wallpaper</button></div>
       </div>
       <div class="setting">
+        <label>About:blank</label>
+        <p>Open czX inside an about:blank tab while keeping the site available.</p>
+        <button class="save-button" id="aboutBlankButton" type="button">Open about:blank</button>
+      </div>
+
+      <div class="setting">
         <label for="panicKey">Panic key</label>
         <p>Press the chosen key to immediately open the saved link.</p>
         <input id="panicKey" class="text-input" type="text" maxlength="1" placeholder="Example: P">
@@ -73,6 +79,7 @@
     const panicUrl=document.getElementById("panicUrl");
     const savePanic=document.getElementById("savePanic");
     const savedMessage=document.getElementById("savedMessage");
+    const aboutBlankButton=document.getElementById("aboutBlankButton");
 
     function openSettings(){overlay.hidden=false;panicKey.value=localStorage.getItem("czxPanicKey")||"";panicUrl.value=localStorage.getItem("czxPanicUrl")||""}
     function closeSettingsPanel(){overlay.hidden=true}
@@ -96,6 +103,15 @@
     clearWallpaper.addEventListener("click",()=>{
       localStorage.removeItem("czxWallpaper");document.body.style.backgroundImage="";document.body.classList.remove("custom-wallpaper");wallpaperFile.value="";
     });
+    aboutBlankButton.addEventListener("click",()=>{
+      const blank=window.open("about:blank","_blank");
+      if(!blank){savedMessage.textContent="Allow pop-ups for czX to use this.";return}
+      blank.document.open();
+      blank.document.write(`<!doctype html><html><head><meta charset="UTF-8"><title>about:blank</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{display:block;width:100%;height:100%;border:0}</style></head><body><iframe src="${location.href}" title="czX"></iframe></body></html>`);
+      blank.document.close();
+      savedMessage.textContent="Opened in about:blank.";
+    });
+
     savePanic.addEventListener("click",()=>{
       const key=panicKey.value.trim().slice(0,1),url=panicUrl.value.trim();
       if(!key||!url){savedMessage.textContent="Enter both a key and a link.";return}
