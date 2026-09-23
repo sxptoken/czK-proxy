@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YouTube Viewer • czX</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+.yv{min-height:calc(100vh - 120px);padding:110px 20px 50px;display:flex;justify-content:center;position:relative;z-index:2}
+.yv-card{width:min(1050px,100%);padding:18px;border:1px solid rgba(137,58,255,.55);border-radius:20px;background:rgba(6,2,19,.88);box-shadow:0 0 45px rgba(102,35,218,.16)}
+.yv-tabs{display:flex;gap:7px;overflow:auto;margin-bottom:10px}.yv-tab{border:0;border-radius:9px;padding:9px 14px;background:#111;color:#aaa;cursor:pointer}.yv-tab.active{background:#20102f;color:#fff}.yv-new{border:0;background:transparent;color:#aaa;font-size:20px;cursor:pointer}
+.yv-bar{display:flex;gap:8px;margin-bottom:14px}.yv-input{flex:1;min-width:0;padding:12px 14px;border:1px solid #332344;border-radius:10px;background:#09050e;color:#fff;outline:none}.yv-go,.yv-full{border:1px solid #7340a8;border-radius:10px;background:#241136;color:#fff;padding:0 15px;cursor:pointer}
+.yv-screen{aspect-ratio:16/9;background:#08050d;border-radius:14px;overflow:hidden;display:grid;place-items:center}.yv-screen iframe{width:100%;height:100%;border:0}.yv-empty{text-align:center;color:#999;padding:25px}.yv-empty h2{color:#fff;margin:0 0 8px}.yv-note{text-align:center;color:#777;font-size:12px;margin-top:10px}
+</style>
+</head>
+<body>
+<header class="topbar"><a class="brand" href="/" aria-label="czX home"><span class="brand-star">✦</span><span>czX</span></a><nav class="main-nav" aria-label="Main navigation"><a class="nav-link" href="/">⌂ <span>Home</span></a><a class="nav-link" href="/games.html">🎮 <span>Games</span></a><a class="nav-link active" href="/youtube.html">▶ <span>YouTube</span></a><a class="nav-link" href="/#settings">⚙ <span>Settings</span></a></nav></header>
+<main class="yv"><section class="yv-card"><div class="yv-tabs" id="tabs"></div><form class="yv-bar" id="form"><input class="yv-input" id="url" placeholder="Enter a YouTube URL..." autocomplete="off"><button class="yv-go" type="submit">Watch</button><button class="yv-full" id="full" type="button">⛶</button></form><div class="yv-screen" id="screen"><div class="yv-empty"><h2>czX YouTube Viewer</h2><div>Paste a YouTube video link above to load it.</div></div></div><div class="yv-note">Uses YouTube's privacy-enhanced no-cookie embed.</div></section></main>
+<script>
+const tabsEl=document.getElementById("tabs"),url=document.getElementById("url"),form=document.getElementById("form"),screen=document.getElementById("screen"),full=document.getElementById("full");
+let tabs=[{id:1,title:"New Tab",url:""}],active=1;
+function drawTabs(){tabsEl.innerHTML=tabs.map(t=>'<button type="button" class="yv-tab '+(t.id===active?"active":"")+'" data-id="'+t.id+'">'+t.title+'</button>').join('')+'<button type="button" class="yv-new" id="new">+</button>';tabsEl.querySelectorAll(".yv-tab").forEach(b=>b.onclick=()=>{active=+b.dataset.id;sync()});document.getElementById("new").onclick=()=>{const id=Date.now();tabs.push({id,title:"New Tab",url:""});active=id;sync()}}
+function idFrom(v){try{const u=new URL(v);if(u.hostname==="youtu.be")return u.pathname.slice(1).split("/")[0];if(u.hostname.includes("youtube.com"))return u.searchParams.get("v")||u.pathname.match(/\/shorts\/([^/]+)/)?.[1]||u.pathname.match(/\/embed\/([^/]+)/)?.[1]}catch{}return null}
+function sync(){const t=tabs.find(x=>x.id===active);url.value=t?.url||"";drawTabs();if(t?.url)load(t.url)}
+function load(v){const id=idFrom(v.trim()),t=tabs.find(x=>x.id===active);if(!t)return;t.url=v.trim();if(!id){screen.innerHTML='<div class="yv-empty"><h2>Invalid YouTube URL</h2><div>Enter a standard YouTube video link.</div></div>';return}t.title="YouTube • "+id;screen.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';drawTabs()}
+form.onsubmit=e=>{e.preventDefault();load(url.value)};full.onclick=()=>screen.requestFullscreen?.();drawTabs();
+</script>
+</body></html>
