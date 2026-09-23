@@ -1,53 +1,52 @@
 import fs from "node:fs";
 import path from "node:path";
-import AdmZip from "adm-zip";
 
-const ZIP_URL = "https://github.com/silvereengames/moto-x3m/archive/refs/heads/main.zip";
 const outputDir = path.resolve("games/moto-x3m");
-const tempZip = path.resolve(".moto-x3m.zip");
 
-console.log("Downloading Moto X3M...");
-const response = await fetch(ZIP_URL);
-if (!response.ok) throw new Error(`Moto X3M download failed: HTTP ${response.status}`);
+const files = [
+  ["index.html", "https://raw.githubusercontent.com/HTML5GameArchive/gfiles/master/games/motox3m/index.html"],
+  ["assets/css/app.css", "https://raw.githubusercontent.com/HTML5GameArchive/gfiles/master/games/motox3m/assets/css/app.css"],
+  ["assets/box2dweb/nape.min.js", "https://raw.githubusercontent.com/HTML5GameArchive/gfiles/master/games/motox3m/assets/box2dweb/nape.min.js"],
+  ["assets/box2dweb/nape-debug-draw.min.js", "https://raw.githubusercontent.com/HTML5GameArchive/gfiles/master/games/motox3m/assets/box2dweb/nape-debug-draw.min.js"],
+  ["assets/box2dweb/jquery-3.1.1.min.js", "https://raw.githubusercontent.com/HTML5GameArchive/gfiles/master/games/motox3m/assets/box2dweb/jquery-3.1.1.min.js"],
+  ["assets/box2dweb/easeljs-0.8.2.combined.js", "https://raw.githubusercontent.com/HTML5GameArchive/gfiles/master/games/motox3m/assets/box2dweb/easeljs-0.8.2.combined.js"],
+  ["assets/box2dweb/bluebird.min.js", "https://raw.githubusercontent.com/HTML5GameArchive/gfiles/master/games/motox3m/assets/box2dweb/bluebird.min.js"],
+  ["assets/js/motox3m4.min.js", "https://raw.githubusercontent.com/HTML5GameArchive/gfiles/master/games/motox3m/assets/js/motox3m4.min.js"]
+];
 
-fs.writeFileSync(tempZip, Buffer.from(await response.arrayBuffer()));
+async function download(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Download failed: HTTP ${response.status} for ${url}`);
+  return Buffer.from(await response.arrayBuffer());
+}
+
+console.log("Installing Moto X3M from a complete local game build...");
 fs.rmSync(outputDir, { recursive: true, force: true });
 fs.mkdirSync(outputDir, { recursive: true });
 
-const zip = new AdmZip(tempZip);
-for (const entry of zip.getEntries()) {
-  const raw = entry.entryName.replaceAll("\\", "/");
-  const parts = raw.split("/");
-  if (parts.length < 2) continue;
-  parts.shift();
-  const relative = parts.join("/");
-  if (!relative) continue;
-
+for (const [relative, url] of files) {
   const destination = path.resolve(outputDir, relative);
-  if (!destination.startsWith(outputDir + path.sep)) throw new Error("Unsafe path in archive.");
-
-  if (entry.isDirectory) fs.mkdirSync(destination, { recursive: true });
-  else {
-    fs.mkdirSync(path.dirname(destination), { recursive: true });
-    fs.writeFileSync(destination, entry.getData());
+  if (!destination.startsWith(outputDir + path.sep)) {
+    throw new Error("Unsafe output path.");
   }
+
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  fs.writeFileSync(destination, await download(url));
 }
-fs.rmSync(tempZip, { force: true });
 
 const indexPath = path.join(outputDir, "index.html");
-if (!fs.existsSync(indexPath)) throw new Error("Moto X3M index.html was not found.");
-
 let html = fs.readFileSync(indexPath, "utf8");
 
-// Remove third-party ad/analytics/instrumentation scripts so the local game
-// does not depend on those services.
+// Make the game completely local. Remove ad/analytics/instrumentation
+// scripts and the host site's absolute main.js reference.
 html = html.replace(/<script[^>]+src=["']https:\/\/imasdk\.googleapis\.com\/[^>]*><\/script>/gi, "");
 html = html.replace(/<script[^>]+src=["']https:\/\/api\.gamemonetize\.com\/[^>]*><\/script>/gi, "");
 html = html.replace(/<script[^>]+src=["']https:\/\/static\.cloudflareinsights\.com\/[^>]*><\/script>/gi, "");
 html = html.replace(/<script[^>]+src=["']inject\.js["'][^>]*><\/script>/gi, "");
+html = html.replace(/<script[^>]+src=["']\/js\/main\.js["'][^>]*><\/script>/gi, "");
+html = html.replace(/<link[^>]+(?:shortcut icon|icon)[^>]*>/gi, "");
 html = html.replace(/<script[^>]*>\s*var\s+notIE11[\s\S]*?<\/script>/gi, "");
 html = html.replace(/<script[^>]+src=["']https:\/\/[^"']+["'][^>]*><\/script>/gi, "");
-html = html.replace(/<base[^>]*>/gi, "");
 
 fs.writeFileSync(indexPath, html);
 console.log(`Moto X3M installed locally: ${outputDir}`);
