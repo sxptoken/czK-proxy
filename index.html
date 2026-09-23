@@ -44,6 +44,15 @@
     </section>
   </div>
 
+  <div class="verse-overlay" id="verseOverlay" hidden>
+    <section class="verse-card" role="dialog" aria-modal="true">
+      <div class="verse-label">BIBLE VERSE</div>
+      <h2 id="verseTitle"></h2>
+      <p id="verseText"></p>
+      <button class="save-button" id="closeVerse" type="button">Continue</button>
+    </section>
+  </div>
+
   <footer>© 2026 czX. All rights reserved.</footer>
 
   <div class="settings-overlay" id="settingsOverlay" hidden>
@@ -85,6 +94,20 @@
   </div>
 
   <script>
+    const verses=[
+      ["John 3:16","For God so loved the world, that he gave his only begotten Son."],
+      ["Philippians 4:13","I can do all things through Christ which strengtheneth me."],
+      ["Jeremiah 29:11","For I know the thoughts that I think toward you, saith the LORD."],
+      ["Psalm 23:1","The LORD is my shepherd; I shall not want."],
+      ["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."]
+    ];
+    const verse=verses[Math.floor(Math.random()*verses.length)];
+    const verseOverlay=document.getElementById("verseOverlay");
+    document.getElementById("verseTitle").textContent=verse[0];
+    document.getElementById("verseText").textContent=verse[1];
+    document.getElementById("closeVerse").addEventListener("click",()=>verseOverlay.hidden=true);
+    verseOverlay.hidden=false;
+
     const settingsButton=document.getElementById("settingsButton");
     const closeSettings=document.getElementById("closeSettings");
     const overlay=document.getElementById("settingsOverlay");
