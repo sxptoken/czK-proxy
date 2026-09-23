@@ -53,6 +53,12 @@
         <div class="setting-row"><button class="secondary-button" id="clearWallpaper" type="button">Clear wallpaper</button></div>
       </div>
       <div class="setting">
+        <label>Open IXL</label>
+        <p>Open IXL in the current tab.</p>
+        <button class="save-button" id="ixlButton" type="button">Open IXL</button>
+      </div>
+
+      <div class="setting">
         <label>About:blank</label>
         <p>Open czX inside an about:blank tab while keeping the site available.</p>
         <button class="save-button" id="aboutBlankButton" type="button">Open about:blank</button>
@@ -80,6 +86,7 @@
     const savePanic=document.getElementById("savePanic");
     const savedMessage=document.getElementById("savedMessage");
     const aboutBlankButton=document.getElementById("aboutBlankButton");
+    const ixlButton=document.getElementById("ixlButton");
 
     function openSettings(){overlay.hidden=false;panicKey.value=localStorage.getItem("czxPanicKey")||"";panicUrl.value=localStorage.getItem("czxPanicUrl")||""}
     function closeSettingsPanel(){overlay.hidden=true}
@@ -103,6 +110,8 @@
     clearWallpaper.addEventListener("click",()=>{
       localStorage.removeItem("czxWallpaper");document.body.style.backgroundImage="";document.body.classList.remove("custom-wallpaper");wallpaperFile.value="";
     });
+    ixlButton.addEventListener("click",()=>{window.location.href="https://www.ixl.com/";});
+
     aboutBlankButton.addEventListener("click",()=>{
       const blank=window.open("about:blank","_blank");
       if(!blank){savedMessage.textContent="Allow pop-ups for czX to use this.";return}
