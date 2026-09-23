@@ -3,7 +3,10 @@ export default async function handler(req, res) {
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
     const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
-    const prompt = messages.map(m => (m.role === "assistant" ? "czX AI: " : "User: ") + String(m.content || "")).join("\n");
+    const prompt = [
+      "You are czX AI. Always reply in English unless the user explicitly asks for another language. Keep replies clear, friendly, and concise.",
+      ...messages.map(m => (m.role === "assistant" ? "czX AI: " : "User: ") + String(m.content || ""))
+    ].join("\n");
     if (!prompt.trim()) return res.status(400).json({ error: "Please enter a message." });
     const response = await fetch("https://text.pollinations.ai/" + encodeURIComponent(prompt));
     const reply = (await response.text()).trim();
