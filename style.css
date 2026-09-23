@@ -32,3 +32,8 @@ footer{position:relative;z-index:2;text-align:center;color:#766a82;font-size:10p
 .setting-row{margin-top:10px}.secondary-button,.save-button{border:0;border-radius:10px;padding:10px 13px;cursor:pointer;font:inherit;font-size:12px;font-weight:800}.secondary-button{background:#251a2f;color:#ddd}.save-button{background:linear-gradient(135deg,#9746ff,#6621c9);color:#fff;box-shadow:0 7px 20px rgba(119,45,224,.2)}.saved-message{display:block;min-height:15px;margin-top:8px;color:#998ba8;font-size:11px}
 .custom-wallpaper{background-size:cover;background-position:center;background-attachment:fixed}
 @media(max-width:760px){.topbar{width:calc(100% - 20px);height:64px;margin-top:10px;padding:0 11px}.brand{font-size:23px}.main-nav{gap:2px}.nav-link{padding:9px 10px}.nav-link span{display:none}.hero-content{padding-top:100px}.hero-card{padding:25px 17px}.hero-card h1{font-size:27px}.promo-card{padding:14px}.promo-card a{padding:9px 12px}.promo-card p{display:none}}
+
+.verse-overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(4,1,10,.72);backdrop-filter:blur(14px)}
+.verse-overlay[hidden]{display:none}
+.verse-card{width:min(520px,100%);padding:30px;border:1px solid rgba(153,77,255,.45);border-radius:24px;background:linear-gradient(145deg,rgba(19,8,35,.98),rgba(9,4,18,.98));box-shadow:0 30px 90px rgba(0,0,0,.6);text-align:center}
+.verse-label{color:#a36aff;font-size:9px;font-weight:900;letter-spacing:2px}.verse-card h2{margin:8px 0 14px;font-size:24px;color:#fff}.verse-card p{margin:0 auto 22px;max-width:440px;color:#c5bbd0;font-size:14px;line-height:1.7;font-style:italic}
