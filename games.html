@@ -14,7 +14,7 @@
     .games-title h1{margin:0;color:#fff;font-size:28px}
     .games-title h1 span{color:#a865ff}
     .games-title p{margin:9px 0 0;color:#9c91ad;font-size:13px}
-    .planet-game-button{display:block;width:min(220px,100%);margin:22px 0 0;padding:0;border:0;border-radius:16px;background:transparent;cursor:pointer;text-align:left}.planet-image{height:130px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column;background:linear-gradient(135deg,#071a2c,#03070d);border:1px solid rgba(76,175,239,.45);box-shadow:0 15px 45px rgba(0,0,0,.35)}.planet-icon{font-size:48px}.planet-image strong{font-size:16px;color:#fff}.planet-game-button:hover{transform:translateY(-3px)}.planet-game-button:focus-visible{outline:2px solid #a865ff;outline-offset:5px}.basket-game-button{display:block;width:min(220px,100%);margin:0;padding:0;border:0;border-radius:16px;background:transparent;cursor:pointer;box-shadow:0 15px 45px rgba(0,0,0,.35);transition:transform .18s ease,box-shadow .18s ease}.basket-game-button:hover{transform:translateY(-3px);box-shadow:0 20px 55px rgba(0,0,0,.45)}.basket-game-button:focus-visible{outline:2px solid #a865ff;outline-offset:5px}.basket-image-only{width:100%;border-radius:16px;overflow:hidden}.basket-image-only img{display:block;width:100%;height:auto}.play-hint{text-align:center;margin:12px 0 0;color:#bca9d1;font-size:12px}.game-player{margin:24px 0 0;border:1px solid rgba(125,50,245,.45);border-radius:16px;overflow:hidden;background:#000}.player-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 15px;background:rgba(15,7,29,.96)}.player-header strong{font-size:13px}.close-game{border:0;border-radius:9px;background:#261832;color:#ddd;padding:8px 11px;cursor:pointer;font:inherit;font-size:11px;font-weight:800}.game-frame{display:block;width:100%;height:min(68vh,650px);border:0;background:#000}.game-note{padding:10px 14px;color:#776b84;font-size:10px;background:rgba(8,3,16,.96)}
+    .basket-game-button{display:block;width:min(220px,100%);margin:0;padding:0;border:0;border-radius:16px;background:transparent;cursor:pointer;box-shadow:0 15px 45px rgba(0,0,0,.35);transition:transform .18s ease,box-shadow .18s ease}.basket-game-button:hover{transform:translateY(-3px);box-shadow:0 20px 55px rgba(0,0,0,.45)}.basket-game-button:focus-visible{outline:2px solid #a865ff;outline-offset:5px}.basket-image-only{width:100%;border-radius:16px;overflow:hidden}.basket-image-only img{display:block;width:100%;height:auto}.play-hint{text-align:center;margin:12px 0 0;color:#bca9d1;font-size:12px}.game-player{margin:24px 0 0;border:1px solid rgba(125,50,245,.45);border-radius:16px;overflow:hidden;background:#000}.player-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 15px;background:rgba(15,7,29,.96)}.player-header strong{font-size:13px}.close-game{border:0;border-radius:9px;background:#261832;color:#ddd;padding:8px 11px;cursor:pointer;font:inherit;font-size:11px;font-weight:800}.game-frame{display:block;width:100%;height:min(68vh,650px);border:0;background:#000}.game-note{padding:10px 14px;color:#776b84;font-size:10px;background:rgba(8,3,16,.96)}
     @media(max-width:600px){.game-frame{height:70vh}}
   </style>
   <!-- Vercel redeploy trigger - latest games layout -->
@@ -46,14 +46,6 @@
                   <div class="game-note">Basket Random runs from the game files installed during the Vercel build.</div>
                 </div>
 
-                <button class="planet-game-button" id="planetClickerCard" type="button" aria-label="Play Planet Clicker">
-                  <div class="planet-image"><div class="planet-icon">🌎</div><strong>Planet Clicker</strong></div>
-                  <div class="play-hint">Click to play</div>
-                </button>
-                <div class="game-player" id="planetGamePlayer" hidden>
-                  <div class="player-header"><strong>🌎 Planet Clicker</strong><button class="close-game" id="closePlanetGame" type="button">Close Game</button></div>
-                  <iframe class="game-frame" id="planetGameFrame" title="Planet Clicker" src="about:blank"></iframe>
-                </div>
         </div>
       </div>
     </section>
@@ -99,15 +91,6 @@
     basketRandomCard.addEventListener("click",openBasketRandom);
     closeGame.addEventListener("click",closeBasketRandom);
 
-
-    const planetClickerCard=document.getElementById("planetClickerCard");
-    const planetGamePlayer=document.getElementById("planetGamePlayer");
-    const planetGameFrame=document.getElementById("planetGameFrame");
-    const closePlanetGame=document.getElementById("closePlanetGame");
-    function openPlanetClicker(){planetGameFrame.src="/games/planet-clicker/index.html";planetGamePlayer.hidden=false;planetGamePlayer.scrollIntoView({behavior:"smooth",block:"start"});}
-    function closePlanetClicker(){planetGameFrame.src="about:blank";planetGamePlayer.hidden=true;}
-    planetClickerCard.addEventListener("click",openPlanetClicker);
-    closePlanetGame.addEventListener("click",closePlanetClicker);
 
     const savedWallpaper=localStorage.getItem("czxWallpaper");
     if(savedWallpaper){document.body.style.backgroundImage=`url("${savedWallpaper}")`;document.body.classList.add("custom-wallpaper");}
