@@ -72,11 +72,16 @@
       ["Psalm 23:1","The LORD is my shepherd; I shall not want."],
       ["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."]
     ];
-    const verse=verses[Math.floor(Math.random()*verses.length)];
-    document.getElementById("verseTitle").textContent=verse[0];
-    document.getElementById("verseText").textContent=verse[1];
-    document.getElementById("verseOverlay").hidden=false;
-    setTimeout(()=>{document.getElementById("verseOverlay").hidden=true},3000);
+    const verseOverlay=document.getElementById("verseOverlay");
+    if(localStorage.getItem("czxVersesDisabled")!=="1"){
+      const verse=verses[Math.floor(Math.random()*verses.length)];
+      document.getElementById("verseTitle").textContent=verse[0];
+      document.getElementById("verseText").textContent=verse[1];
+      verseOverlay.hidden=false;
+      setTimeout(()=>{verseOverlay.hidden=true},3000);
+    }else{
+      verseOverlay.hidden=true;
+    }
 
     const basketRandomCard=document.getElementById("basketRandomCard");
     const playBasket=document.getElementById("playBasket");
