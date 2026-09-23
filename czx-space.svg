@@ -3,6 +3,7 @@
 <radialGradient id="bg"><stop stop-color="#10041d"/><stop offset=".5" stop-color="#05020a"/><stop offset="1" stop-color="#000"/></radialGradient>
 <radialGradient id="halo"><stop stop-color="#b65cff" stop-opacity=".45"/><stop offset=".45" stop-color="#6519c9" stop-opacity=".16"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
 <linearGradient id="ring" x1="0" y1=".5" x2="1" y2=".5"><stop stop-color="#4d13a8"/><stop offset=".2" stop-color="#a84cff"/><stop offset=".5" stop-color="#e2a4ff"/><stop offset=".8" stop-color="#8a32ed"/><stop offset="1" stop-color="#4d13a8"/></linearGradient>
+<linearGradient id="shoot" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#fff" stop-opacity="0"/><stop offset=".65" stop-color="#d9a0ff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></linearGradient>
 <filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 <filter id="soft"><feGaussianBlur stdDeviation="45"/></filter>
 </defs>
@@ -12,22 +13,32 @@
 <circle cx="100" cy="100" r="2"/><circle cx="280" cy="180" r="1.5"/><circle cx="480" cy="90" r="1.5"/><circle cx="690" cy="170" r="2"/><circle cx="920" cy="100" r="1.5"/><circle cx="1160" cy="170" r="2"/><circle cx="1430" cy="110" r="1.5"/><circle cx="1520" cy="350" r="2"/>
 <circle cx="90" cy="650" r="1.5"/><circle cx="280" cy="760" r="2"/><circle cx="520" cy="700" r="1.5"/><circle cx="1080" cy="750" r="2"/><circle cx="1320" cy="650" r="1.5"/><circle cx="1510" cy="800" r="2"/>
 </g>
+
+<!-- shooting stars -->
+<g filter="url(#glow)" stroke-linecap="round">
+<path d="M145 210 L285 140" stroke="url(#shoot)" stroke-width="3"/>
+<circle cx="285" cy="140" r="3" fill="#fff"/>
+<path d="M1320 300 L1465 225" stroke="url(#shoot)" stroke-width="3"/>
+<circle cx="1465" cy="225" r="3" fill="#fff"/>
+<path d="M280 510 L410 445" stroke="url(#shoot)" stroke-width="2.5"/>
+<circle cx="410" cy="445" r="2.5" fill="#fff"/>
+<path d="M1180 720 L1325 645" stroke="url(#shoot)" stroke-width="3"/>
+<circle cx="1325" cy="645" r="3" fill="#fff"/>
+</g>
+
 <!-- clean purple black hole -->
 <g transform="translate(800 455)">
-<!-- soft outer glow -->
 <ellipse rx="365" ry="112" fill="none" stroke="#7625df" stroke-width="28" opacity=".18" filter="url(#soft)"/>
-<!-- single clean accretion disk -->
 <ellipse rx="330" ry="102" fill="none" stroke="#5215b5" stroke-width="22" opacity=".75"/>
 <ellipse rx="305" ry="94" fill="none" stroke="url(#ring)" stroke-width="13" filter="url(#glow)"/>
 <ellipse rx="275" ry="84" fill="none" stroke="#d59aff" stroke-width="4" opacity=".85"/>
-<!-- event horizon -->
 <ellipse rx="225" ry="70" fill="#010106"/>
 <ellipse rx="225" ry="70" fill="none" stroke="#8f3cff" stroke-width="3" opacity=".8"/>
 <circle r="112" fill="#000"/>
 <circle r="108" fill="#010005"/>
-<!-- small clean highlight -->
 <ellipse rx="315" ry="96" fill="none" stroke="#f0c8ff" stroke-width="2" opacity=".55"/>
 </g>
+
 <g fill="#c47aff" filter="url(#glow)" opacity=".75">
 <circle cx="500" cy="355" r="2"/><circle cx="1100" cy="550" r="2"/><circle cx="610" cy="610" r="1.5"/><circle cx="1010" cy="300" r="1.5"/>
 </g>
