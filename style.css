@@ -5,17 +5,19 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 body:after{content:"";position:fixed;inset:-30px;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.16) 1px,transparent 1px),radial-gradient(rgba(168,101,255,.12) 1px,transparent 1px);background-size:46px 46px,73px 73px;background-position:0 0,30px 20px;opacity:.14;z-index:-1;animation:czxStarsDrift 30s linear infinite}
 
 @keyframes czxWallpaperDrift{
-  0%{background-position:48% 48%}
-  50%{background-position:52% 51%}
-  100%{background-position:47% 53%}
+  0%{background-position:47% 48%;background-size:115% 115%;transform:scale(1)}
+  25%{background-position:52% 49%;background-size:118% 118%;transform:scale(1.006)}
+  50%{background-position:50% 53%;background-size:116% 116%;transform:scale(1)}
+  75%{background-position:48% 51%;background-size:119% 119%;transform:scale(1.006)}
+  100%{background-position:53% 47%;background-size:115% 115%;transform:scale(1)}
 }
 @keyframes czxStarsDrift{
-  from{transform:translate3d(0,0,0) scale(1)}
-  to{transform:translate3d(-46px,-73px,0) scale(1.015)}
+  from{transform:translate3d(0,0,0) rotate(0deg)}
+  to{transform:translate3d(-46px,-73px,0) rotate(.4deg)}
 }
 @keyframes czxGlowPulse{
-  from{opacity:.78;transform:scale(1)}
-  to{opacity:1;transform:scale(1.04)}
+  from{opacity:.68;transform:scale(1)}
+  to{opacity:1;transform:scale(1.08)}
 }
 @media (prefers-reduced-motion:reduce){
   body,body:before,body:after{animation:none!important}
