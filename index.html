@@ -40,11 +40,10 @@
       <div class="verse-label">VERSE OF THE DAY</div>
       <h2 id="verseTitle">A Bible Verse</h2>
       <p id="verseText"></p>
-      <button class="save-button" id="closeVerse" type="button">Continue</button>
     </section>
   </div>
 
-  <div class="verse-overlay" id="verseOverlay" hidden>
+  <div class="verse-overlay" id="verseOverlay">
     <section class="verse-card" role="dialog" aria-modal="true">
       <div class="verse-label">BIBLE VERSE</div>
       <h2 id="verseTitle"></h2>
@@ -105,8 +104,8 @@
     const verseOverlay=document.getElementById("verseOverlay");
     document.getElementById("verseTitle").textContent=verse[0];
     document.getElementById("verseText").textContent=verse[1];
-    document.getElementById("closeVerse").addEventListener("click",()=>verseOverlay.hidden=true);
     verseOverlay.hidden=false;
+    setTimeout(()=>{verseOverlay.hidden=true},5000);
 
     const settingsButton=document.getElementById("settingsButton");
     const closeSettings=document.getElementById("closeSettings");
