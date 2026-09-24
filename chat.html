@@ -127,10 +127,12 @@ async function startChat(){
         status.textContent="Database read failed. Check Realtime Database rules.";
         console.error(err);
       });
+      input.disabled=false;
       send.disabled=false;
     });
   }catch(err){
-    status.textContent="Firebase connection failed. Enable Anonymous Authentication and Realtime Database.";
+    status.textContent="Firebase connection failed: "+(err?.message||"check Firebase settings.");
+    input.disabled=true;
     send.disabled=true;
     console.error(err);
   }
