@@ -4,14 +4,29 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chat • czX</title>
 <link rel="stylesheet" href="/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=Inter:wght@400;500;600;700;800;900&family=Merriweather:wght@400;700;900&family=Orbitron:wght@400;600;700;800;900&family=Pacifico&family=Roboto+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 .chat-page{width:min(920px,92vw);margin:auto;min-height:calc(100vh - 120px);padding:105px 0 50px;position:relative;z-index:2}
 .chat-card{height:min(720px,78vh);min-height:520px;padding:22px;border:1px solid rgba(153,77,255,.45);border-radius:24px;background:rgba(8,3,20,.9);box-shadow:0 25px 70px rgba(0,0,0,.35);display:flex;flex-direction:column}
 .chat-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:15px}.chat-head h1{margin:3px 0 0;font-size:26px}.chat-head p{margin:0;color:#91869e;font-size:12px}
+.chat-head-actions{display:flex;align-items:center;gap:8px}
 .chat-messages{flex:1;overflow:auto;padding:10px 4px;display:flex;flex-direction:column;gap:10px}
-.chat-message{max-width:82%;padding:12px 15px;border-radius:16px;line-height:1.5;white-space:pre-wrap}.chat-bot{align-self:flex-start;background:#191020;color:#ddd}.chat-user{align-self:flex-end;background:#6f2fc6;color:#fff}
+.chat-message{max-width:82%;padding:12px 15px;border-radius:16px;line-height:1.5;white-space:pre-wrap}
+.chat-bot{align-self:flex-start;background:#191020;color:#ddd}.chat-user{align-self:flex-end;background:#6f2fc6;color:#fff}
 .chat-form{display:flex;gap:9px;margin-top:12px}.chat-input{flex:1;margin:0}.chat-send{min-width:85px}.chat-status{min-height:17px;color:#998ba8;font-size:11px;margin-top:6px}
-@media(max-width:600px){.chat-page{padding-top:85px}.chat-card{height:calc(100vh - 140px);min-height:460px;padding:16px}.chat-message{max-width:90%}}
+.font-button{border:1px solid rgba(153,77,255,.35);border-radius:11px;padding:10px 13px;background:#171022;color:#eee;font:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
+.font-button:hover{transform:translateY(-1px);background:#241536;border-color:rgba(181,119,255,.65)}
+.font-picker{position:fixed;z-index:200;top:88px;right:calc((100vw - min(920px,92vw))/2);width:250px;padding:10px;border:1px solid rgba(153,77,255,.45);border-radius:18px;background:rgba(12,5,24,.98);box-shadow:0 22px 70px rgba(0,0,0,.55);backdrop-filter:blur(18px)}
+.font-picker[hidden]{display:none}
+.font-picker-title{padding:6px 8px 8px;color:#a36aff;font-size:9px;font-weight:900;letter-spacing:2px}
+.font-option{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid transparent;border-radius:11px;background:transparent;color:#fff;text-align:left;cursor:pointer}
+.font-option:hover{background:rgba(132,57,235,.14);border-color:rgba(168,91,255,.18)}
+.font-option.selected{background:rgba(132,57,235,.22);border-color:rgba(168,91,255,.35)}
+.font-check{opacity:0;color:#bd8aff;font-weight:900}.font-option.selected .font-check{opacity:1}
+.font-preview{font-size:14px}
+@media(max-width:600px){.chat-page{padding-top:85px}.chat-card{height:calc(100vh - 140px);min-height:460px;padding:16px}.chat-message{max-width:90%}.font-picker{top:78px;right:15px;width:235px}}
 </style>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -26,15 +41,36 @@
 <a class="nav-link" href="/#settings">⚙ <span>Settings</span></a>
 </nav>
 </header>
+
 <main class="chat-page">
 <section class="chat-card">
-<div class="chat-head"><div><span class="settings-label">CZ X CHAT</span><h1>Chat</h1><p>Talk with other people on czX.</p></div><a class="secondary-button" href="/">Home</a></div>
+<div class="chat-head">
+  <div><span class="settings-label">CZ X CHAT</span><h1>Chat</h1><p>Talk with other people on czX.</p></div>
+  <div class="chat-head-actions">
+    <button class="font-button" id="fontButton" type="button">Aa Fonts</button>
+    <a class="secondary-button" href="/">Home</a>
+  </div>
+</div>
+
 <div class="chat-messages" id="messages" aria-live="polite"><div class="chat-message chat-bot">Create or sign in to your czX account before using chat.</div></div>
 <form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="500" placeholder="Type a message..." autocomplete="off" required disabled><button class="save-button chat-send" id="send" type="submit" disabled>Send</button></form>
 <div class="chat-status" id="status" aria-live="polite"></div>
 <div id="accountGate" style="display:none;text-align:center;margin-top:10px"><a class="save-button" href="/?account=1">Create / Sign in to your account</a></div>
 </section>
 </main>
+
+<div class="font-picker" id="fontPicker" hidden>
+  <div class="font-picker-title">CHAT FONT</div>
+  <button class="font-option selected" type="button" data-font="Inter" style="font-family:Inter,sans-serif"><span class="font-preview">Inter</span><span class="font-check">✓</span></button>
+  <button class="font-option" type="button" data-font="Space Grotesk" style="font-family:'Space Grotesk',sans-serif"><span class="font-preview">Space Grotesk</span><span class="font-check">✓</span></button>
+  <button class="font-option" type="button" data-font="Comic Neue" style="font-family:'Comic Neue',cursive"><span class="font-preview">Comic Neue</span><span class="font-check">✓</span></button>
+  <button class="font-option" type="button" data-font="Orbitron" style="font-family:Orbitron,sans-serif"><span class="font-preview">Orbitron</span><span class="font-check">✓</span></button>
+  <button class="font-option" type="button" data-font="Roboto Mono" style="font-family:'Roboto Mono',monospace"><span class="font-preview">Roboto Mono</span><span class="font-check">✓</span></button>
+  <button class="font-option" type="button" data-font="Merriweather" style="font-family:Merriweather,serif"><span class="font-preview">Merriweather</span><span class="font-check">✓</span></button>
+  <button class="font-option" type="button" data-font="Pacifico" style="font-family:Pacifico,cursive"><span class="font-preview">Pacifico</span><span class="font-check">✓</span></button>
+  <button class="font-option" type="button" data-font="Bangers" style="font-family:Bangers,cursive"><span class="font-preview">Bangers</span><span class="font-check">✓</span></button>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
@@ -42,12 +78,16 @@ import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } fro
 
 const messages=document.getElementById("messages"),form=document.getElementById("form"),input=document.getElementById("input"),send=document.getElementById("send"),status=document.getElementById("status");
 const accountGate=document.getElementById("accountGate");
+const fontButton=document.getElementById("fontButton"),fontPicker=document.getElementById("fontPicker");
+const fontOptions=[...document.querySelectorAll(".font-option")];
+
 function getStoredAccount(){
   try{
     const account=JSON.parse(localStorage.getItem("czxAccount")||"null");
     return account&&typeof account.username==="string"&&account.username.trim()&&typeof account.password==="string"?account:null;
   }catch{return null}
 }
+
 const firebaseConfig = {
   apiKey: "AIzaSyCZy9hSB6JRmsmduheEIBZnG4q6GatPd5c",
   authDomain: "czxx-8392d.firebaseapp.com",
@@ -63,19 +103,38 @@ let db=null;
 let currentUser=null;
 let initialized=false;
 
-const storedAccount=getStoredAccount();
-if(!storedAccount){
-  input.disabled=true;
-  send.disabled=true;
-  accountGate.style.display="block";
-  status.textContent="Account required to use chat.";
-}else{
-  startChat();
+function applyFont(font){
+  document.documentElement.style.setProperty("--czx-chat-font", '"'+font+'"');
+  document.querySelector(".chat-card").style.fontFamily='"'+font+'",sans-serif';
+  messages.querySelectorAll(".chat-message").forEach(el=>el.style.fontFamily='"'+font+'",sans-serif');
+  input.style.fontFamily='"'+font+'",sans-serif';
+  localStorage.setItem("czxChatFont",font);
+  fontOptions.forEach(option=>option.classList.toggle("selected",option.dataset.font===font));
 }
+
+const savedFont=localStorage.getItem("czxChatFont")||"Inter";
+applyFont(fontOptions.some(o=>o.dataset.font===savedFont)?savedFont:"Inter");
+
+fontButton.addEventListener("click",e=>{
+  e.stopPropagation();
+  fontPicker.hidden=!fontPicker.hidden;
+});
+
+fontOptions.forEach(option=>{
+  option.addEventListener("click",()=>{
+    applyFont(option.dataset.font);
+    fontPicker.hidden=true;
+  });
+});
+
+document.addEventListener("click",e=>{
+  if(!fontPicker.hidden && !fontPicker.contains(e.target) && e.target!==fontButton) fontPicker.hidden=true;
+});
 
 function add(text,role,username=""){
   const el=document.createElement("div");
   el.className="chat-message "+(role==="user"?"chat-user":"chat-bot");
+  el.style.fontFamily='"'+(localStorage.getItem("czxChatFont")||"Inter")+'",sans-serif';
   if(username){
     const name=document.createElement("strong");
     name.textContent=username;
@@ -155,7 +214,6 @@ form.addEventListener("submit",async e=>{
     console.error(err);
   }finally{send.disabled=false;input.focus();}
 });
-
 </script>
 </body>
 </html>
