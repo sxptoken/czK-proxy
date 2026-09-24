@@ -103,6 +103,14 @@ let db=null;
 let currentUser=null;
 let initialized=false;
 
+const storedAccount=getStoredAccount();
+if(!storedAccount){
+  input.disabled=true;
+  send.disabled=true;
+  accountGate.style.display="block";
+  status.textContent="Account required to use chat.";
+}
+
 function applyFont(font){
   document.documentElement.style.setProperty("--czx-chat-font", '"'+font+'"');
   document.querySelector(".chat-card").style.fontFamily='"'+font+'",sans-serif';
@@ -214,6 +222,8 @@ form.addEventListener("submit",async e=>{
     console.error(err);
   }finally{send.disabled=false;input.focus();}
 });
+
+if(storedAccount) startChat();
 </script>
 </body>
 </html>
