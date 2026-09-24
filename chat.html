@@ -75,6 +75,10 @@ function add(text,role,username=""){
 }
 
 function getUsername(){
+  try{
+    const account=JSON.parse(localStorage.getItem("czxAccount")||"null");
+    if(account&&typeof account.username==="string"&&account.username.trim())return account.username.trim();
+  }catch{}
   let name=localStorage.getItem("czxChatUsername");
   if(!name){
     name="Guest-"+Math.floor(1000+Math.random()*9000);
