@@ -29,7 +29,89 @@
     </section>
   </main>
 
+
+
+  <div class="calc-overlay" id="calcOverlay" hidden><section class="calc-panel" role="dialog" aria-modal="true" aria-labelledby="calcTitle"><div class="ai-header"><div><span class="settings-label">CZ X TOOL</span><h2 id="calcTitle">Calculator</h2></div><button class="close-button" id="closeCalc" type="button" aria-label="Close calculator">×</button></div><div class="calc-display" id="calcDisplay">0</div><div class="calc-grid"><button type="button" class="calc-key " data-calc="7">7</button><button type="button" class="calc-key " data-calc="8">8</button><button type="button" class="calc-key " data-calc="9">9</button><button type="button" class="calc-key " data-calc="÷">÷</button><button type="button" class="calc-key " data-calc="4">4</button><button type="button" class="calc-key " data-calc="5">5</button><button type="button" class="calc-key " data-calc="6">6</button><button type="button" class="calc-key " data-calc="×">×</button><button type="button" class="calc-key " data-calc="1">1</button><button type="button" class="calc-key " data-calc="2">2</button><button type="button" class="calc-key " data-calc="3">3</button><button type="button" class="calc-key " data-calc="−">−</button><button type="button" class="calc-key " data-calc="0">0</button><button type="button" class="calc-key " data-calc=".">.</button><button type="button" class="calc-key " data-calc="⌫">⌫</button><button type="button" class="calc-key " data-calc="+">+</button><button type="button" class="calc-key " data-calc="C">C</button><button type="button" class="calc-key calc-equal" data-calc="=">=</button></div></section></div>
+
+  <div class="ai-overlay" id="aiOverlay" hidden><section class="ai-panel" role="dialog" aria-modal="true" aria-labelledby="aiTitle"><div class="ai-header"><div><span class="settings-label">CZ X AI</span><h2 id="aiTitle">AI Assistant</h2></div><button class="close-button" id="closeAi" type="button" aria-label="Close AI">×</button></div><div class="ai-messages" id="aiMessages" aria-live="polite"><div class="ai-message ai-bot">Hey! I’m the czX AI assistant. Ask me something.</div></div><form class="ai-form" id="aiForm"><input class="text-input ai-input" id="aiInput" type="text" maxlength="2000" placeholder="Ask czX AI..." autocomplete="off" required><button class="save-button ai-send" id="aiSend" type="submit">Send</button></form><div class="ai-status" id="aiStatus" aria-live="polite"></div></section></div>
+
+  <footer>© 2026 czX. All rights reserved.</footer>
+
+  <div class="settings-overlay" id="settingsOverlay" hidden>
+    <section class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="settings-header"><div><span class="settings-label">SETTINGS</span><h2 id="settingsTitle">Customize czX</h2></div><button class="close-button" id="closeSettings" type="button" aria-label="Close settings">×</button></div>
+      <div class="setting"><label for="wallpaperFile">Wallpaper</label><p>Each person can set their own wallpaper. It is saved only in that browser.</p><input id="wallpaperFile" type="file" accept="image/*"><div class="setting-row"><button class="secondary-button" id="clearWallpaper" type="button">Clear wallpaper</button></div></div>
+      
+      <div class="setting"><label>Lock site</label><p>Lock czX and return to the password screen. The optional account stays saved in this browser.</p><button class="save-button" id="lockSiteButton" type="button">🔒 Lock czX</button></div>
+      <div class="setting"><label>About:blank</label><p>Open czX inside a separate about:blank tab.</p><button class="save-button" id="aboutBlankButton" type="button">Open about:blank</button></div>
+      <div class="setting"><label for="panicKey">Panic key</label><p>Press the chosen key to immediately open the saved link.</p><input id="panicKey" class="text-input" type="text" maxlength="1" placeholder="Example: P"><input id="panicUrl" class="text-input" type="url" placeholder="https://example.com"><button class="save-button" id="savePanic" type="button">Save panic key</button><span class="saved-message" id="savedMessage" aria-live="polite"></span></div>
+    </section>
+  </div>
+
+  <button class="profile-button" id="profileButton" type="button" aria-label="Account"><span id="profileAvatar">👤</span></button>
+
+  <div class="account-overlay" id="accountOverlay" hidden>
+    <section class="account-panel" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+      <button class="close-button account-close" id="closeAccount" type="button" aria-label="Close account">×</button>
+      <div class="account-avatar" id="accountAvatar">👤</div><h2 id="accountTitle">Account</h2><p class="account-subtitle">Sign in or create an optional czX account.</p>
+      <div id="accountForms"><div class="account-tabs"><button class="account-tab active" id="signInTab" type="button">Sign in</button><button class="account-tab" id="signUpTab" type="button">Sign up</button></div><form id="accountForm"><input class="text-input" id="accountUsername" type="text" maxlength="24" placeholder="Username" autocomplete="username" required><input class="text-input" id="accountPassword" type="password" maxlength="72" placeholder="Password" autocomplete="current-password" required><button class="save-button account-submit" id="accountSubmit" type="submit">Sign in</button><span class="saved-message" id="accountMessage" aria-live="polite"></span></form></div>
+      <div id="signedInView" hidden><p class="account-welcome">Signed in as <strong id="accountName"></strong></p><div class="profile-preview" id="profilePreview"><img id="profilePreviewImage" alt="Profile picture preview"><span id="profilePreviewFallback">🙂</span></div><label class="upload-button" for="profileFile">Choose profile picture</label><input id="profileFile" class="profile-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><button class="secondary-button account-submit" id="removeProfileButton" type="button">Remove profile picture</button><button class="secondary-button account-submit" id="signOutButton" type="button">Sign out</button><span class="saved-message" id="profileMessage" aria-live="polite"></span></div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZy9hSB6JRmsmduheEIBZnG4q6GatPd5c",
+      authDomain: "czxx-8392d.firebaseapp.com",
+      databaseURL: "https://czxx-8392d-default-rtdb.firebaseio.com",
+      projectId: "czxx-8392d",
+      storageBucket: "czxx-8392d.firebasestorage.app",
+      messagingSenderId: "216434211403",
+      appId: "1:216434211403:web:96c8b687ad2a7e8cf1abce",
+      measurementId: "G-MR4F9DEVVR"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    const firebaseAuth = getAuth(firebaseApp);
+    const firebaseDb = getDatabase(firebaseApp);
+    let usernameAuthReady = false;
+
+    signInAnonymously(firebaseAuth).then(() => {
+      usernameAuthReady = true;
+    }).catch(() => {
+      usernameAuthReady = false;
+    });
+
+    async function usernameKey(username) {
+      const normalized = username.trim().toLowerCase();
+      const bytes = new TextEncoder().encode(normalized);
+      const hash = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    window.reserveCzxUsername = async function(username) {
+      if (!usernameAuthReady) {
+        throw new Error("Username service is still connecting. Try again in a moment.");
+      }
+      const key = await usernameKey(username);
+      const usernameRef = ref(firebaseDb, "czxUsernames/" + key);
+      const result = await runTransaction(usernameRef, current => {
+        if (current !== null) return;
+        return { username: username.trim(), createdAt: Date.now() };
+      });
+      if (!result.committed) {
+        throw new Error("That username is already taken.");
+      }
+      return true;
+    };
+  </script>
+
   <script>
+    document.getElementById("verseTitle").textContent=verse[0];document.getElementById("verseText").textContent=verse[1];verseOverlay.hidden=false;setTimeout(()=>{verseOverlay.hidden=true},3000);
     const lockSiteButton=document.getElementById("lockSiteButton");lockSiteButton.addEventListener("click",()=>{document.cookie="czx_auth=; Max-Age=0; Path=/;";window.location.href="/login.html"});
     const settingsButton=document.getElementById("settingsButton"),closeSettings=document.getElementById("closeSettings"),overlay=document.getElementById("settingsOverlay"),wallpaperFile=document.getElementById("wallpaperFile"),clearWallpaper=document.getElementById("clearWallpaper"),panicKey=document.getElementById("panicKey"),panicUrl=document.getElementById("panicUrl"),savePanic=document.getElementById("savePanic"),savedMessage=document.getElementById("savedMessage"),aboutBlankButton=document.getElementById("aboutBlankButton");
     function openSettings(){overlay.hidden=false;panicKey.value=localStorage.getItem("czxPanicKey")||"";panicUrl.value=localStorage.getItem("czxPanicUrl")||""}function closeSettingsPanel(){overlay.hidden=true}
