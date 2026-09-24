@@ -63,6 +63,57 @@
     </section>
   </div>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZy9hSB6JRmsmduheEIBZnG4q6GatPd5c",
+      authDomain: "czxx-8392d.firebaseapp.com",
+      databaseURL: "https://czxx-8392d-default-rtdb.firebaseio.com",
+      projectId: "czxx-8392d",
+      storageBucket: "czxx-8392d.firebasestorage.app",
+      messagingSenderId: "216434211403",
+      appId: "1:216434211403:web:96c8b687ad2a7e8cf1abce",
+      measurementId: "G-MR4F9DEVVR"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    const firebaseAuth = getAuth(firebaseApp);
+    const firebaseDb = getDatabase(firebaseApp);
+    let usernameAuthReady = false;
+
+    signInAnonymously(firebaseAuth).then(() => {
+      usernameAuthReady = true;
+    }).catch(() => {
+      usernameAuthReady = false;
+    });
+
+    async function usernameKey(username) {
+      const normalized = username.trim().toLowerCase();
+      const bytes = new TextEncoder().encode(normalized);
+      const hash = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    window.reserveCzxUsername = async function(username) {
+      if (!usernameAuthReady) {
+        throw new Error("Username service is still connecting. Try again in a moment.");
+      }
+      const key = await usernameKey(username);
+      const usernameRef = ref(firebaseDb, "czxUsernames/" + key);
+      const result = await runTransaction(usernameRef, current => {
+        if (current !== null) return;
+        return { username: username.trim(), createdAt: Date.now() };
+      });
+      if (!result.committed) {
+        throw new Error("That username is already taken.");
+      }
+      return true;
+    };
+  </script>
+
   <script>
     const verses=[["John 3:16","For God so loved the world, that he gave his only begotten Son."],["Philippians 4:13","I can do all things through Christ which strengtheneth me."],["Jeremiah 29:11","For I know the thoughts that I think toward you, saith the LORD."],["Psalm 23:1","The LORD is my shepherd; I shall not want."],["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."]];
     const verse=verses[Math.floor(Math.random()*verses.length)],verseOverlay=document.getElementById("verseOverlay");
@@ -87,7 +138,7 @@
     profileButton.addEventListener("click",openAccount);closeAccount.addEventListener("click",()=>{accountOverlay.hidden=true});accountOverlay.addEventListener("click",e=>{if(e.target===accountOverlay)accountOverlay.hidden=true});
     function setAccountMode(mode){accountMode=mode;signInTab.classList.toggle("active",mode==="signin");signUpTab.classList.toggle("active",mode==="signup");accountSubmit.textContent=mode==="signin"?"Sign in":"Sign up";accountPassword.autocomplete=mode==="signin"?"current-password":"new-password";accountMessage.textContent=""}
     signInTab.addEventListener("click",()=>setAccountMode("signin"));signUpTab.addEventListener("click",()=>setAccountMode("signup"));
-    accountForm.addEventListener("submit",e=>{e.preventDefault();const username=accountUsername.value.trim(),password=accountPassword.value;if(username.length<2){accountMessage.textContent="Username must be at least 2 characters.";return}if(password.length<4){accountMessage.textContent="Password must be at least 4 characters.";return}const existing=getStoredAccount();if(accountMode==="signup"){if(existing){accountMessage.textContent="An account is already saved on this browser.";return}localStorage.setItem("czxAccount",JSON.stringify({username,password}));accountMessage.textContent="Account created.";updateAccountUI();return}if(!existing||existing.username!==username||existing.password!==password){accountMessage.textContent="Incorrect username or password.";return}accountMessage.textContent="Signed in.";updateAccountUI()});
+    accountForm.addEventListener("submit",e=>{e.preventDefault();const username=accountUsername.value.trim(),password=accountPassword.value;if(username.length<2){accountMessage.textContent="Username must be at least 2 characters.";return}if(password.length<4){accountMessage.textContent="Password must be at least 4 characters.";return}const existing=getStoredAccount();if(accountMode==="signup"){if(existing){accountMessage.textContent="An account is already saved on this browser.";return}accountSubmit.disabled=true;accountMessage.textContent="Checking username...";try{await window.reserveCzxUsername(username);localStorage.setItem("czxAccount",JSON.stringify({username,password}));accountMessage.textContent="Account created.";updateAccountUI()}catch(err){accountMessage.textContent=err.message||"That username is already taken."}finally{accountSubmit.disabled=false}return}if(!existing||existing.username!==username||existing.password!==password){accountMessage.textContent="Incorrect username or password.";return}accountMessage.textContent="Signed in.";updateAccountUI()});
     profileFile.addEventListener("change",()=>{const file=profileFile.files[0];if(!file||!file.type.startsWith("image/"))return;if(file.size>3*1024*1024){profileMessage.textContent="Profile picture must be 3 MB or smaller.";profileFile.value="";return}const reader=new FileReader();reader.onload=()=>{localStorage.setItem("czxProfilePicture",reader.result);profileMessage.textContent="Profile picture saved.";updateAccountUI()};reader.readAsDataURL(file)});
     removeProfileButton.addEventListener("click",()=>{localStorage.removeItem("czxProfilePicture");profileFile.value="";profileMessage.textContent="Profile picture removed.";updateAccountUI()});signOutButton.addEventListener("click",()=>{localStorage.removeItem("czxAccount");accountUsername.value="";accountPassword.value="";setAccountMode("signin");updateAccountUI()});setAccountMode("signin");updateAccountUI();
     const savedWallpaper=localStorage.getItem("czxWallpaper");if(savedWallpaper){document.body.style.backgroundImage=`url("${savedWallpaper}")`;document.body.classList.add("custom-wallpaper")}
