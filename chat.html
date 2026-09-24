@@ -46,16 +46,6 @@ function getStoredAccount(){
     return account&&typeof account.username==="string"&&account.username.trim()&&typeof account.password==="string"?account:null;
   }catch{return null}
 }
-const storedAccount=getStoredAccount();
-if(!storedAccount){
-  input.disabled=true;
-  send.disabled=true;
-  accountGate.style.display="block";
-  status.textContent="Account required to use chat.";
-}else{
-  startChat();
-}
-
 const firebaseConfig = {
   apiKey: "AIzaSyCZy9hSB6JRmsmduheEIBZnG4q6GatPd5c",
   authDomain: "czxx-8392d.firebaseapp.com",
@@ -70,6 +60,16 @@ const firebaseConfig = {
 let db=null;
 let currentUser=null;
 let initialized=false;
+
+const storedAccount=getStoredAccount();
+if(!storedAccount){
+  input.disabled=true;
+  send.disabled=true;
+  accountGate.style.display="block";
+  status.textContent="Account required to use chat.";
+}else{
+  startChat();
+}
 
 function add(text,role,username=""){
   const el=document.createElement("div");
