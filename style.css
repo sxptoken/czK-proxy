@@ -97,6 +97,6 @@ footer{position:relative;z-index:2;text-align:center;color:#766a82;font-size:10p
 
 
 /* Dev Mode panel: top-left */
-.dev-overlay{position:fixed!important;inset:0!important;z-index:120!important;display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;padding:24px!important;background:rgba(4,1,10,.68)!important;backdrop-filter:blur(16px)}
+.dev-overlay{position:fixed!important;inset:0!important;z-index:120!important;display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;padding:24px!important;background:transparent!important;backdrop-filter:none!important}
 .dev-overlay[hidden]{display:none!important}
 .dev-overlay .settings-panel{margin:0!important;max-width:520px;width:min(520px,calc(100vw - 48px))}
