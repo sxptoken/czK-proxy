@@ -2,36 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>czX</title>
   <style>
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08090d}
-    iframe{display:block;width:100%;height:100%;border:0}
-    #error{display:none;color:#fff;font-family:Arial,sans-serif;padding:32px;text-align:center}
+    iframe{display:block;width:100%;height:100%;border:0;background:#fff}
+    #error{display:none;color:#fff;background:#08090d;font:16px Arial,sans-serif;padding:32px;text-align:center;height:100%;box-sizing:border-box}
   </style>
 </head>
 <body>
-  <iframe id="cloakFrame" title="Cloaked site"></iframe>
-  <div id="error">A valid http or https URL is required.</div>
-  <script>
-    const params=new URLSearchParams(location.search);
-    const target=params.get("url");
-    const name=(params.get("name")||"czX").trim().slice(0,80);
-    document.title=name||"czX";
-    if(target){
-      try{
-        const u=new URL(target);
-        if(["http:","https:"].includes(u.protocol)){
-          document.getElementById("cloakFrame").src="/api/proxy?url="+encodeURIComponent(u.href);
-        }else{throw new Error()}
-      }catch{
-        document.getElementById("cloakFrame").style.display="none";
-        document.getElementById("error").style.display="block";
-      }
-    }else{
-      document.getElementById("cloakFrame").style.display="none";
-      document.getElementById("error").style.display="block";
+  <iframe id="cloakFrame" title="Cloaked site" allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write"></iframe>
+  <div id="error"></div>
+<script>
+(function(){
+  const params=new URLSearchParams(location.search);
+  let name=(params.get("name")||"").trim().slice(0,100);
+  let target=(params.get("url")||"").trim();
+
+  // When opened as /NAME, recover the saved destination from this browser.
+  const pathName=decodeURIComponent(location.pathname.split("/").filter(Boolean).pop()||"");
+  const pathKey=pathName.toLowerCase();
+
+  if(!name && pathName) name=pathName;
+  if(!target && pathKey){
+    try{target=localStorage.getItem("czxCloak:"+pathKey)||""}catch{}
+  }
+
+  document.title=name||"czX";
+
+  if(!target){
+    showError("No website is saved for this cloak link.");
+    return;
+  }
+
+  try{
+    const u=new URL(target);
+    if(!["http:","https:"].includes(u.protocol)) throw new Error();
+    try{localStorage.setItem("czxCloak:"+pathKey,u.href)}catch{}
+    
+    // Replace the long query-string URL with the custom name path.
+    const slug=encodeURIComponent(name||pathName||"cloak");
+    if(location.pathname==="/cloak.html"){
+      history.replaceState({},document.title,"/"+slug);
     }
-  </script>
+
+    document.getElementById("cloakFrame").src="/api/proxy?url="+encodeURIComponent(u.href);
+  }catch{
+    showError("Enter a valid http or https website URL.");
+  }
+
+  function showError(message){
+    const frame=document.getElementById("cloakFrame");
+    frame.style.display="none";
+    const error=document.getElementById("error");
+    error.textContent=message;
+    error.style.display="block";
+  }
+})();
+</script>
 </body>
 </html>
