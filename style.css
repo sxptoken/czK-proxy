@@ -140,3 +140,154 @@ body:before{background:radial-gradient(circle at 22% 45%,rgba(132,58,255,.22),tr
 @media(max-width:900px){.topbar{position:relative;left:auto;top:auto;bottom:auto;width:calc(100% - 20px);height:64px;margin:10px auto 0;padding:0 12px;flex-direction:row;align-items:center}.brand{margin:0}.main-nav{flex-direction:row;align-items:center}.nav-link{width:auto}.home,.games-page,.chat-page{width:min(920px,92vw);margin:auto}.hero-content{padding-top:100px}.settings-panel{width:min(920px,calc(100vw - 32px))}.wallpaper-presets{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:600px){.main-nav{gap:2px}.nav-link{padding:9px 8px}.hero-card h1{font-size:31px}.wallpaper-presets{grid-template-columns:repeat(2,minmax(0,1fr))!important}.wallpaper-preview{height:120px!important}.settings-panel{padding:20px}.profile-button{right:15px;top:auto;bottom:15px}}
 @media(max-width:420px){.wallpaper-presets{grid-template-columns:1fr!important}}
+
+
+/* czX premium visual polish */
+:root{
+  --czx-violet:#a86cff;
+  --czx-violet-2:#6d2de2;
+  --czx-text:#f8f5ff;
+  --czx-muted:#a69ab5;
+  --czx-line:rgba(177,119,255,.2);
+}
+body{
+  font-family:Inter,"Segoe UI",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+  letter-spacing:-.01em;
+}
+.brand,.hero-card h1,.games-title h1,.settings-header h2,.ai-header h2,.calc-panel h2,.account-panel h2{
+  font-family:Inter,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-weight:900;
+  text-rendering:geometricPrecision;
+  -webkit-font-smoothing:antialiased;
+}
+.brand{letter-spacing:-3px;text-shadow:0 0 28px rgba(168,108,255,.48)}
+.brand-star{font-size:20px}
+.hero-card{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 88% 18%,rgba(145,71,255,.18),transparent 28%),
+    linear-gradient(135deg,rgba(10,5,22,.92),rgba(5,3,13,.78));
+}
+.hero-card:before{
+  content:"";
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(110deg,transparent 0 38%,rgba(255,255,255,.035) 50%,transparent 62%);
+  transform:translateX(-70%);
+  animation:czxSheen 9s ease-in-out infinite;
+}
+.hero-card h1{font-size:clamp(34px,4vw,48px);line-height:1.04;letter-spacing:-2px}
+.hero-card h1 span{background:linear-gradient(90deg,#fff,#c58cff 42%,#8f4cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-card p,.quick-copy p,.games-title p{letter-spacing:.01em}
+.home-action-row{gap:14px}
+.games-icon-button,.ai-icon-button,.calc-icon-button,.chat-icon-button{
+  position:relative;overflow:hidden;
+  min-height:74px;
+  color:#f8f5ff!important;
+  font-size:13px;
+  letter-spacing:.01em;
+}
+.games-icon-button:before,.ai-icon-button:before,.calc-icon-button:before,.chat-icon-button:before{
+  content:"";position:absolute;inset:1px;border-radius:17px;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.08),transparent 34%,transparent 70%,rgba(168,108,255,.08));
+}
+.controller-icon{font-size:38px;filter:drop-shadow(0 0 12px rgba(192,139,255,.75))}
+.ai-icon{font-size:28px}
+.games-icon-button:hover .controller-icon{transform:scale(1.08) rotate(-3deg)}
+.ai-icon-button:hover .ai-icon{transform:scale(1.12) rotate(12deg)}
+.controller-icon,.ai-icon{transition:transform .2s ease}
+.wallpaper-preset{cursor:pointer}
+.wallpaper-preview{
+  position:relative!important;
+  background-color:#05020b;
+  background-size:cover!important;
+  background-position:center!important;
+}
+.wallpaper-preview:after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),transparent 32%,rgba(0,0,0,.32));
+  pointer-events:none;
+}
+.wallpaper-preset-copy strong{letter-spacing:-.01em}
+.wallpaper-preset-copy small{letter-spacing:.01em}
+.wallpaper-preset:hover .wallpaper-preview{filter:saturate(1.12) brightness(1.05)}
+.wallpaper-preset.selected .wallpaper-preview{filter:saturate(1.18) brightness(1.06)}
+.settings-panel,.ai-panel,.calc-panel,.account-panel{
+  scrollbar-color:#6f36ba transparent;
+}
+.games-card{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(137,65,255,.11),transparent 30%),
+    linear-gradient(145deg,rgba(9,4,20,.94),rgba(4,2,11,.88));
+  border-color:rgba(153,77,255,.3);
+}
+.games-title{text-align:left;padding:4px 4px 6px}
+.games-title h1{font-size:32px;letter-spacing:-1.4px}
+.games-title h1 span{color:#b67cff}
+.games-title p{font-size:12px;color:#978ba6}
+.games-card-row{gap:16px}
+.games-card-row>a{
+  position:relative;
+  overflow:hidden;
+  border-radius:18px;
+  background:rgba(7,3,15,.72);
+  border:1px solid rgba(160,94,255,.18);
+}
+.basket-game-button,.tiny-fishing-game-button{
+  border-radius:18px!important;
+}
+.basket-image-only,.tiny-fishing-image{
+  height:150px!important;
+  position:relative;
+  border-radius:17px!important;
+  background:#07030e!important;
+}
+.basket-image-only:after,.tiny-fishing-image:after{
+  content:"";
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 38%,rgba(3,1,8,.74));
+  pointer-events:none;
+}
+.basket-image-only img,.tiny-fishing-image img{
+  transition:transform .45s cubic-bezier(.2,.75,.2,1),filter .35s ease;
+}
+.games-card-row>a:hover img{transform:scale(1.07);filter:saturate(1.12) contrast(1.04)}
+.games-card-row>a:hover{
+  border-color:rgba(174,112,255,.5);
+  box-shadow:0 18px 48px rgba(0,0,0,.4),0 0 28px rgba(112,42,225,.12);
+}
+.play-hint{
+  position:relative;
+  z-index:2;
+  margin:-28px 10px 0!important;
+  padding:9px 10px 10px;
+  border-radius:10px;
+  color:#fff!important;
+  background:linear-gradient(180deg,rgba(7,3,15,.05),rgba(7,3,15,.88));
+  font-weight:800;
+  letter-spacing:.01em;
+}
+.game-player{border-color:rgba(163,95,255,.32);box-shadow:0 22px 65px rgba(0,0,0,.35)}
+.player-header strong{letter-spacing:-.01em}
+.calc-key,.save-button,.secondary-button,.account-tab,.close-game,.nav-link{
+  -webkit-font-smoothing:antialiased;
+}
+.calc-key{transition:transform .12s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}
+.calc-key:hover{transform:translateY(-1px);border-color:rgba(176,110,255,.42);box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.save-button{background:linear-gradient(135deg,#a45cff,#6724cf);font-weight:850}
+.close-button{transition:transform .15s ease,background .15s ease,color .15s ease}
+.close-button:hover{transform:rotate(3deg) scale(1.04)}
+@keyframes czxSheen{0%,55%{transform:translateX(-70%)}75%,100%{transform:translateX(70%)}}
+@media(max-width:760px){
+  .hero-card{padding:38px 25px}
+  .hero-card h1{font-size:34px}
+  .games-title{text-align:center}
+  .games-title h1{font-size:29px}
+  .basket-image-only,.tiny-fishing-image{height:140px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-card:before{animation:none}
+}
