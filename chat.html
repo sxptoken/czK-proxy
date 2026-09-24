@@ -28,9 +28,10 @@
 <main class="chat-page">
 <section class="chat-card">
 <div class="chat-head"><div><span class="settings-label">CZ X CHAT</span><h1>Chat</h1><p>Talk with other people on czX.</p></div><a class="secondary-button" href="/">Home</a></div>
-<div class="chat-messages" id="messages" aria-live="polite"><div class="chat-message chat-bot">Connect your Firebase project to start chatting with other people on czX.</div></div>
-<form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="500" placeholder="Type a message..." autocomplete="off" required><button class="save-button chat-send" id="send" type="submit">Send</button></form>
+<div class="chat-messages" id="messages" aria-live="polite"><div class="chat-message chat-bot">Create or sign in to your czX account before using chat.</div></div>
+<form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="500" placeholder="Type a message..." autocomplete="off" required disabled><button class="save-button chat-send" id="send" type="submit" disabled>Send</button></form>
 <div class="chat-status" id="status" aria-live="polite"></div>
+<div id="accountGate" style="display:none;text-align:center;margin-top:10px"><a class="save-button" href="/?account=1">Create / Sign in to your account</a></div>
 </section>
 </main>
 <script type="module">
@@ -39,6 +40,22 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
 const messages=document.getElementById("messages"),form=document.getElementById("form"),input=document.getElementById("input"),send=document.getElementById("send"),status=document.getElementById("status");
+const accountGate=document.getElementById("accountGate");
+function getStoredAccount(){
+  try{
+    const account=JSON.parse(localStorage.getItem("czxAccount")||"null");
+    return account&&typeof account.username==="string"&&account.username.trim()&&typeof account.password==="string"?account:null;
+  }catch{return null}
+}
+const storedAccount=getStoredAccount();
+if(!storedAccount){
+  input.disabled=true;
+  send.disabled=true;
+  accountGate.style.display="block";
+  status.textContent="Account required to use chat.";
+}else{
+  startChat();
+}
 
 const firebaseConfig = {
   apiKey: "AIzaSyCZy9hSB6JRmsmduheEIBZnG4q6GatPd5c",
@@ -135,7 +152,6 @@ form.addEventListener("submit",async e=>{
     console.error(err);
   }finally{send.disabled=false;input.focus();}
 });
-startChat();
-</script>
+
 </body>
 </html>
