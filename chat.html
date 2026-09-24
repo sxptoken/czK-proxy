@@ -27,27 +27,125 @@
 </header>
 <main class="chat-page">
 <section class="chat-card">
-<div class="chat-head"><div><span class="settings-label">CZ X CHAT</span><h1>Chat</h1><p>Talk with the czX AI assistant.</p></div><a class="secondary-button" href="/">Home</a></div>
-<div class="chat-messages" id="messages" aria-live="polite"><div class="chat-message chat-bot">Hey! I'm the czX chat assistant. What do you want to talk about?</div></div>
-<form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="2000" placeholder="Type a message..." autocomplete="off" required><button class="save-button chat-send" id="send" type="submit">Send</button></form>
+<div class="chat-head"><div><span class="settings-label">CZ X CHAT</span><h1>Chat</h1><p>Talk with other people on czX.</p></div><a class="secondary-button" href="/">Home</a></div>
+<div class="chat-messages" id="messages" aria-live="polite"><div class="chat-message chat-bot">Connect your Firebase project to start chatting with other people on czX.</div></div>
+<form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="500" placeholder="Type a message..." autocomplete="off" required><button class="save-button chat-send" id="send" type="submit">Send</button></form>
 <div class="chat-status" id="status" aria-live="polite"></div>
 </section>
 </main>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+
 const messages=document.getElementById("messages"),form=document.getElementById("form"),input=document.getElementById("input"),send=document.getElementById("send"),status=document.getElementById("status");
-const history=[];
-function add(text,role){const el=document.createElement("div");el.className="chat-message "+(role==="user"?"chat-user":"chat-bot");el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight}
+
+const firebaseConfig = {
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "YOUR_FIREBASE_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_FIREBASE_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_FIREBASE_PROJECT",
+  storageBucket: "YOUR_FIREBASE_PROJECT.firebasestorage.app",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+let db=null;
+let currentUser=null;
+let initialized=false;
+
+function add(text,role,username=""){
+  const el=document.createElement("div");
+  el.className="chat-message "+(role==="user"?"chat-user":"chat-bot");
+  if(username){
+    const name=document.createElement("strong");
+    name.textContent=username;
+    name.style.display="block";
+    name.style.fontSize="11px";
+    name.style.opacity=".75";
+    name.style.marginBottom="3px";
+    el.appendChild(name);
+  }
+  const body=document.createElement("span");
+  body.textContent=text;
+  el.appendChild(body);
+  messages.appendChild(el);
+  messages.scrollTop=messages.scrollHeight;
+}
+
+function getUsername(){
+  let name=localStorage.getItem("czxChatUsername");
+  if(!name){
+    name="Guest-"+Math.floor(1000+Math.random()*9000);
+    localStorage.setItem("czxChatUsername",name);
+  }
+  return name;
+}
+
+function renderMessages(data){
+  messages.innerHTML="";
+  const rows=Object.values(data||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  if(!rows.length){
+    add("No messages yet. Say hello!","assistant");
+    return;
+  }
+  rows.forEach(m=>add(String(m.text||""),m.uid===currentUser?.uid?"user":"assistant",String(m.username||"Guest")));
+}
+
+async function startChat(){
+  if(initialized)return;
+  initialized=true;
+  try{
+    if(firebaseConfig.apiKey.startsWith("YOUR_") || firebaseConfig.databaseURL.includes("YOUR_FIREBASE_PROJECT")){
+      status.textContent="Firebase setup needed: add your Firebase web app config in chat.html.";
+      send.disabled=true;
+      return;
+    }
+    const app=initializeApp(firebaseConfig);
+    const auth=getAuth(app);
+    db=getDatabase(app);
+    await signInAnonymously(auth);
+    onAuthStateChanged(auth,user=>{
+      currentUser=user;
+      if(!user)return;
+      status.textContent="Connected • "+getUsername();
+      const messagesRef=query(ref(db,"czxChat/messages"),orderByChild("createdAt"),limitToLast(100));
+      onValue(messagesRef,snap=>renderMessages(snap.val()));
+      send.disabled=false;
+    });
+  }catch(err){
+    status.textContent="Firebase connection failed. Check your Firebase config and Realtime Database setup.";
+    send.disabled=true;
+    console.error(err);
+  }
+}
+
 form.addEventListener("submit",async e=>{
-e.preventDefault();const text=input.value.trim();if(!text)return;
-add(text,"user");history.push({role:"user",content:text});input.value="";input.disabled=true;send.disabled=true;status.textContent="Thinking...";
-try{
-const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history.slice(-12)})});
-const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"Chat is unavailable.");
-const reply=String(data.reply||"I couldn't generate a response.");add(reply,"assistant");history.push({role:"assistant",content:reply});status.textContent="";
-}catch(err){add(err.message||"Something went wrong.","assistant");status.textContent="Try again in a moment.";
-}finally{input.disabled=false;send.disabled=false;input.focus()}
+  e.preventDefault();
+  const text=input.value.trim();
+  if(!text || !db || !currentUser)return;
+  if(text.length>500)return;
+  send.disabled=true;
+  status.textContent="Sending...";
+  try{
+    await push(ref(db,"czxChat/messages"),{
+      uid:currentUser.uid,
+      username:getUsername(),
+      text,
+      createdAt:Date.now()
+    });
+    input.value="";
+    status.textContent="Connected • "+getUsername();
+  }catch(err){
+    status.textContent="Message could not be sent.";
+    console.error(err);
+  }finally{
+    send.disabled=false;
+    input.focus();
+  }
 });
-input.focus();
+
+startChat();
 </script>
 </body>
 </html>
