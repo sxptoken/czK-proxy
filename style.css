@@ -291,3 +291,11 @@ body{
 @media(prefers-reduced-motion:reduce){
   .hero-card:before{animation:none}
 }
+
+
+/* Use the actual space wallpaper artwork in each preset preview */
+.solar-system-preview{background-image:url("/wallpapers/solar-system.svg")!important;background-size:cover!important;background-position:center!important}
+.starfield-preview{background-image:url("/wallpapers/starfield.svg")!important;background-size:cover!important;background-position:center!important}
+.nebula-preview{background-image:url("/wallpapers/purple-nebula.svg")!important;background-size:cover!important;background-position:center!important}
+.galaxy-preview{background-image:url("/wallpapers/galaxy.svg")!important;background-size:cover!important;background-position:center!important}
+.deep-space-preview{background-image:url("/wallpapers/deep-space.svg")!important;background-size:cover!important;background-position:center!important}
