@@ -4,11 +4,10 @@ export default async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
     const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
     const userText = messages.filter(m => m.role === "user").map(m => String(m.content || "")).join(" ").trim();
-    if (/\b(is|are)\b.*\braylen\b.*\bgay\b|\bgay\b.*\b(is|are)\b.*\braylen\b/i.test(userText)) {
-      return res.status(200).json({ reply: "No 😭" });
-    }
-    if (/\b(is|are)\b.*\bgay\b/i.test(userText)) {
-      return res.status(200).json({ reply: "Yes 😭" });
+    const gayQuestion = /\b(is|are)\b.*\bgay\b|\bgay\b.*\b(is|are)\b/i.test(userText);
+    if (gayQuestion) {
+      const protectedName = /\b(raylen|nijae|czk|cxz)\b/i.test(userText);
+      return res.status(200).json({ reply: protectedName ? "No 😭" : "Yes 😭" });
     }
     const prompt = [
       "You are czX AI. Always reply in English unless the user explicitly asks for another language. Keep replies clear, friendly, and concise.",
