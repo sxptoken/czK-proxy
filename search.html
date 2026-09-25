@@ -95,28 +95,39 @@ async function runSearch(query,updateUrl=true){
  if(updateUrl)history.pushState({query},"","/search.html?q="+encodeURIComponent(query));
  results.innerHTML='<div class="search-message">Searching for "'+escapeHtml(query)+'"…</div>';
 
+ const looksLikeYouTube=/\byoutube\b/i.test(query);
+
  try{
+  if(looksLikeYouTube){
+   const ytQuery=query.replace(/\byoutube\b/ig,"").trim()||"YouTube";
+   const response=await fetch("/api/youtube?q="+encodeURIComponent(ytQuery)+"&maxResults=10",{headers:{"Accept":"application/json"}});
+   const data=await response.json();
+
+   if(!response.ok){
+    throw new Error(data.error||"YouTube video search failed.");
+   }
+
+   const ytResults=Array.isArray(data.items)?data.items:[];
+   if(!ytResults.length){
+    results.innerHTML='<div class="search-message">No YouTube videos found for "'+escapeHtml(ytQuery)+'".</div>';
+    return;
+   }
+
+   results.innerHTML=ytResults.map(renderYouTube).join("");
+   return;
+  }
+
   const response=await fetch("/api/search?q="+encodeURIComponent(query),{headers:{"Accept":"application/json"}});
   const data=await response.json();
   if(!response.ok||!data.ok)throw new Error(data.error||"Search failed.");
 
-  let normalResults=Array.isArray(data.results)?data.results:[];
-  const looksLikeYouTube=/\byoutube\b/i.test(query);
-  let ytResults=[];
-
-  if(looksLikeYouTube){
-   try{ytResults=await getYouTubeResults(query.replace(/\byoutube\b/ig,"").trim()||"YouTube");}catch{}
-  }
-
-  const ytIds=new Set(ytResults.map(x=>x.id));
-  normalResults=normalResults.filter(x=>!ytIds.has(youtubeId(x.url)));
-
-  if(!normalResults.length&&!ytResults.length){
+  const normalResults=Array.isArray(data.results)?data.results:[];
+  if(!normalResults.length){
    results.innerHTML='<div class="search-message">No results found for "'+escapeHtml(query)+'".</div>';
    return;
   }
 
-  results.innerHTML=ytResults.map(renderYouTube).join("")+normalResults.map(renderNormal).join("");
+  results.innerHTML=normalResults.map(renderNormal).join("");
  }catch(error){
   results.innerHTML='<div class="search-message">Search failed: '+escapeHtml(error.message)+'</div>';
  }
