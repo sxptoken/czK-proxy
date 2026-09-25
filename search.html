@@ -143,7 +143,7 @@ async function runSearch(query, updateUrl = true) {
     results.innerHTML = data.results.map(result => {
       const safeUrl = escapeHtml(result.url);
       return '<article class="result">' +
-        '<a href="' + safeUrl + '" target="_self" rel="noopener noreferrer">' +
+        '<a href="/api/proxy?url=' + encodeURIComponent(result.url) + '" rel="noopener noreferrer">' +
         escapeHtml(result.title) + '</a>' +
         '<div class="result-url">' + safeUrl + '</div>' +
         (result.snippet ? '<div class="result-snippet">' + escapeHtml(result.snippet) + '</div>' : '') +
