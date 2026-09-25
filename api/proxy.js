@@ -71,7 +71,7 @@ html,body{margin:0;width:100%;height:100%;background:#08090d;color:#fff;font-fam
     }
 
     if (youtubeVideoId && /^[A-Za-z0-9_-]{6,20}$/.test(youtubeVideoId)) {
-      const embedUrl = "https://www.youtube.com/embed/" + encodeURIComponent(youtubeVideoId) + "?autoplay=0&rel=0&playsinline=1";
+      const embedUrl = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(youtubeVideoId) + "?autoplay=0&rel=0&playsinline=1&origin=https%3A%2F%2Fczk-bay.vercel.app";
       const page = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,14 +85,14 @@ body{padding:18px}
 .top{max-width:1200px;margin:0 auto 14px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:24px;font-weight:900;color:#fff;text-decoration:none}
 .back{color:#aeb5c2;text-decoration:none;font-size:14px}
-.video{max-width:1200px;margin:0 auto;background:#000;aspect-ratio:16/9;border-radius:12px;overflow:hidden}
+.video{max-width:1200px;margin:0 auto;background:#000;aspect-ratio:16/9;border-radius:12px;overflow:hidden;position:relative}
 iframe{width:100%;height:100%;border:0;display:block}
 .note{max-width:1200px;margin:12px auto 0;color:#8f96a3;font-size:13px}
 </style>
 </head>
 <body>
 <div class="top"><a class="logo" href="/">czX</a><a class="back" href="javascript:history.back()">← Back</a></div>
-<div class="video"><iframe src="${embedUrl}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+<div class="video"><iframe id="yt" src="${embedUrl}" title="YouTube video" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe><div id="fallback" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:#08090d;color:#fff;text-align:center;padding:24px"><strong>This YouTube video cannot be embedded.</strong><span style="color:#9aa1ad;font-size:14px">The video owner or YouTube may have disabled embedded playback.</span></div></div>
 <div class="note">YouTube video player</div>
 </body>
 </html>`;
