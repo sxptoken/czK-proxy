@@ -2,58 +2,56 @@ module.exports = async (req, res) => {
   const url = new URL(req.url || "/", "https://czx.local");
   const q = (url.searchParams.get("q") || "").trim();
 
-  if (!q) return res.status(400).json({ok:false,error:"Missing search query."});
+  if (!q) return res.status(400).json({ ok:false, error:"Missing search query." });
 
-  const target = "https://api.duckduckgo.com/?q=" + encodeURIComponent(q) + "&format=json&no_html=1&no_redirect=1";
+  const key = process.env.BRAVE_SEARCH_API_KEY;
+  if (!key) {
+    return res.status(500).json({
+      ok:false,
+      error:"Search is not configured yet. Add BRAVE_SEARCH_API_KEY to Vercel Environment Variables."
+    });
+  }
 
   try {
-    const response = await fetch(target, {
-      headers: {"User-Agent":"czX Search/1.0"},
-      redirect: "follow"
+    const endpoint = "https://api.search.brave.com/res/v1/web/search?q=" +
+      encodeURIComponent(q) +
+      "&country=US&search_lang=en&count=10&safesearch=moderate";
+
+    const response = await fetch(endpoint, {
+      headers: {
+        "Accept": "application/json",
+        "X-Subscription-Token": key
+      }
     });
 
-    if (!response.ok) throw new Error("DuckDuckGo HTTP " + response.status);
-
     const data = await response.json();
-    const results = [];
-    const seen = new Set();
 
-    const add = (title, href, snippet) => {
-      if (!href || !/^https?:\/\//i.test(href) || seen.has(href)) return;
-      if (/duckduckgo\.com/i.test(href)) return;
-      const cleanTitle = String(title || "").trim();
-      if (!cleanTitle) return;
-      seen.add(href);
-      results.push({title:cleanTitle,url:href,snippet:String(snippet || "").trim()});
-    };
-
-    if (data.AbstractURL && data.AbstractText) {
-      add(data.Heading || q, data.AbstractURL, data.AbstractText);
+    if (!response.ok) {
+      console.error("Brave Search error:", response.status, data);
+      return res.status(502).json({
+        ok:false,
+        error:"Search provider returned an error."
+      });
     }
 
-    const walk = topics => {
-      if (!Array.isArray(topics) || results.length >= 10) return;
-      for (const item of topics) {
-        if (results.length >= 10) break;
-        if (item.FirstURL) {
-          add(item.Text, item.FirstURL, item.Text);
-        }
-        if (item.Topics) walk(item.Topics);
-      }
-    };
-
-    walk(data.RelatedTopics);
+    const results = Array.isArray(data?.web?.results)
+      ? data.web.results.slice(0, 10).map(item => ({
+          title: item.title || item.url,
+          url: item.url,
+          snippet: item.description || ""
+        })).filter(item => /^https?:\/\//i.test(item.url || ""))
+      : [];
 
     return res.status(200).json({
       ok:true,
       query:q,
-      results,
-      note: results.length
-        ? "DuckDuckGo results"
-        : "DuckDuckGo returned no web results for this query."
+      results
     });
   } catch (error) {
     console.error("czX search error:", error);
-    return res.status(502).json({ok:false,error:"DuckDuckGo search is temporarily unavailable."});
+    return res.status(502).json({
+      ok:false,
+      error:"Search provider could not be reached."
+    });
   }
 };
