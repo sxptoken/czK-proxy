@@ -2,56 +2,34 @@ module.exports = async (req, res) => {
   const url = new URL(req.url || "/", "https://czx.local");
   const q = (url.searchParams.get("q") || "").trim();
 
-  if (!q) return res.status(400).json({ ok:false, error:"Missing search query." });
-
-  const key = process.env.BRAVE_SEARCH_API_KEY;
-  if (!key) {
-    return res.status(500).json({
-      ok:false,
-      error:"Search is not configured yet. Add BRAVE_SEARCH_API_KEY to Vercel Environment Variables."
-    });
-  }
+  if (!q) return res.status(400).json({ok:false,error:"Missing search query."});
 
   try {
-    const endpoint = "https://api.search.brave.com/res/v1/web/search?q=" +
-      encodeURIComponent(q) +
-      "&country=US&search_lang=en&count=10&safesearch=moderate";
-
+    const endpoint = "https://puri.li/api/search?q=" + encodeURIComponent(q) + "&page=1";
     const response = await fetch(endpoint, {
-      headers: {
-        "Accept": "application/json",
-        "X-Subscription-Token": key
-      }
+      headers: {"Accept":"application/json"},
+      redirect: "follow"
     });
-
-    const data = await response.json();
 
     if (!response.ok) {
-      console.error("Brave Search error:", response.status, data);
-      return res.status(502).json({
-        ok:false,
-        error:"Search provider returned an error."
-      });
+      throw new Error("Search provider HTTP " + response.status);
     }
 
-    const results = Array.isArray(data?.web?.results)
-      ? data.web.results.slice(0, 10).map(item => ({
-          title: item.title || item.url,
-          url: item.url,
-          snippet: item.description || ""
-        })).filter(item => /^https?:\/\//i.test(item.url || ""))
-      : [];
+    const data = await response.json();
+    const raw = Array.isArray(data?.results) ? data.results : [];
 
-    return res.status(200).json({
-      ok:true,
-      query:q,
-      results
-    });
+    const results = raw.slice(0,10).map(item => ({
+      title: item.title || item.name || item.url,
+      url: item.url || item.link,
+      snippet: item.snippet || item.description || item.text || ""
+    })).filter(item => item.title && /^https?:\/\//i.test(item.url || ""));
+
+    return res.status(200).json({ok:true,query:q,results});
   } catch (error) {
     console.error("czX search error:", error);
     return res.status(502).json({
       ok:false,
-      error:"Search provider could not be reached."
+      error:"Search is temporarily unavailable. Please try again."
     });
   }
 };
