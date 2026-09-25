@@ -85,15 +85,34 @@
 </main>
 
 <script>
-  function searchDuckDuckGo(event) {
+  const form = document.querySelector(".search-box");
+  form.addEventListener("submit", function(event) {
     event.preventDefault();
+    const query = form.querySelector('input[name="q"]').value.trim();
+    if (!query) return;
 
-    const query = document.getElementById("searchInput").value;
-    const url = "https://duckduckgo.com/?q=" + encodeURIComponent(query);
+    const url = "/search.html?q=" + encodeURIComponent(query);
+    window.history.pushState({ query }, "", url);
+    showSearchState(query);
+  });
 
-    document.getElementById("resultsFrame").src = url;
+  function showSearchState(query) {
+    const old = document.getElementById("search-status");
+    if (old) old.remove();
+
+    const status = document.createElement("p");
+    status.id = "search-status";
+    status.textContent = 'Searching DuckDuckGo for "' + query + '"…';
+    status.style.cssText = "width:min(1000px,94vw);margin:18px auto;color:#bbb;text-align:center;";
+    form.insertAdjacentElement("afterend", status);
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get("q");
+  if (query) {
+    form.querySelector('input[name="q"]').value = query;
+    showSearchState(query);
   }
 </script>
-
 </body>
 </html>
