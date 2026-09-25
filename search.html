@@ -72,20 +72,16 @@
 </header>
 
 <main class="search-wrap">
-  <form class="search-box" onsubmit="searchDuckDuckGo(event)">
+  <form class="search-box" action="https://duckduckgo.com/" method="get">
     <input
-      id="searchInput"
+      name="q"
       type="search"
       placeholder="Search DuckDuckGo..."
       required
+      autocomplete="off"
     >
     <button type="submit">Search</button>
   </form>
-
-  <iframe
-    id="resultsFrame"
-    title="DuckDuckGo search results">
-  </iframe>
 </main>
 
 <script>
