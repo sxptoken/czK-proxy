@@ -143,18 +143,19 @@ document.addEventListener("click",e=>{
 function add(text,role,username="",pfp=""){
   const row=document.createElement("div");
   row.className="chat-row "+(role==="user"?"chat-row-user":"");
-  const avatar=document.createElement("div");
-  avatar.className="chat-pfp chat-pfp-fallback";
+  let avatarNode;
+  const fallback=document.createElement("div");
+  fallback.className="chat-pfp chat-pfp-fallback";
+  fallback.textContent="🙂";
   if(pfp){
     const img=document.createElement("img");
     img.src=pfp;
     img.alt="";
     img.className="chat-pfp";
-    img.onerror=()=>{img.remove();avatar.textContent="🙂";};
-    img.onload=()=>{img.style.display="block";};
-    avatar.replaceWith(img);
+    img.onerror=()=>{img.replaceWith(fallback);};
+    avatarNode=img;
   }else{
-    avatar.textContent="🙂";
+    avatarNode=fallback;
   }
   const el=document.createElement("div");
   el.className="chat-message "+(role==="user"?"chat-user":"chat-bot");
@@ -171,7 +172,7 @@ function add(text,role,username="",pfp=""){
   const body=document.createElement("span");
   body.textContent=text;
   el.appendChild(body);
-  if(role==="user") row.append(el,avatar); else row.append(avatar,el);
+  if(role==="user") row.append(el,avatarNode); else row.append(avatarNode,el);
   messages.appendChild(row);
   messages.scrollTop=messages.scrollHeight;
 }
