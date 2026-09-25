@@ -14,7 +14,7 @@
 .chat-head-actions{display:flex;align-items:center;gap:8px}
 .chat-messages{flex:1;overflow:auto;padding:10px 4px;display:flex;flex-direction:column;gap:10px}
 .chat-message{max-width:82%;padding:12px 15px;border-radius:16px;line-height:1.5;white-space:pre-wrap}
-.chat-row{display:flex;align-items:flex-end;gap:8px}.chat-row.chat-row-user{justify-content:flex-end}.chat-pfp{width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;border:1px solid rgba(181,119,255,.35);background:#171022}.chat-pfp-fallback{display:grid;place-items:center;font-size:17px}.chat-row .chat-message{max-width:calc(82% - 42px)}
+.chat-row{display:flex;align-items:flex-end;gap:8px}.chat-row.chat-row-user{justify-content:flex-end}.chat-pfp{display:block;width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;border:1px solid rgba(181,119,255,.35);background:#171022}.chat-pfp-fallback{display:grid;place-items:center;font-size:17px}.chat-row .chat-message{max-width:calc(82% - 42px)}
 .chat-bot{align-self:flex-start;background:#191020;color:#ddd}.chat-user{align-self:flex-end;background:#6f2fc6;color:#fff}
 .chat-form{display:flex;gap:9px;margin-top:12px}.chat-input{flex:1;margin:0}.chat-send{min-width:85px}.chat-status{min-height:17px;color:#998ba8;font-size:11px;margin-top:6px}
 .font-button{border:1px solid rgba(153,77,255,.35);border-radius:11px;padding:10px 13px;background:#171022;color:#eee;font:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
@@ -151,6 +151,7 @@ function add(text,role,username="",pfp=""){
     img.alt="";
     img.className="chat-pfp";
     img.onerror=()=>{img.replaceWith(avatar);avatar.textContent="🙂";};
+    img.onload=()=>{img.style.display="block";};
     avatar.replaceWith(img);
   }else{
     avatar.textContent="🙂";
@@ -177,9 +178,10 @@ function add(text,role,username="",pfp=""){
 
 async function getChatPfp(){
   const pfp=localStorage.getItem("czxProfilePicture")||"";
-  if(!pfp)return "";
+  if(!pfp || !pfp.startsWith("data:image/"))return "";
   try{
     const img=new Image();
+    img.crossOrigin="anonymous";
     img.src=pfp;
     await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;});
     const size=128;
