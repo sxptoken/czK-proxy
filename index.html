@@ -190,7 +190,31 @@ devModeButton.addEventListener("click",()=>{devPasswordOverlay.hidden=false;devP
     function setAccountMode(mode){accountMode=mode;signInTab.classList.toggle("active",mode==="signin");signUpTab.classList.toggle("active",mode==="signup");accountSubmit.textContent=mode==="signin"?"Sign in":"Sign up";accountPassword.autocomplete=mode==="signin"?"current-password":"new-password";accountMessage.textContent=""}
     signInTab.addEventListener("click",()=>setAccountMode("signin"));signUpTab.addEventListener("click",()=>setAccountMode("signup"));
     accountForm.addEventListener("submit",async e=>{e.preventDefault();const username=accountUsername.value.trim(),password=accountPassword.value;if(username.length<2){accountMessage.textContent="Username must be at least 2 characters.";return}if(password.length<4){accountMessage.textContent="Password must be at least 4 characters.";return}const existing=getStoredAccount();if(accountMode==="signup"){if(existing){accountMessage.textContent="An account is already saved on this browser.";return}accountSubmit.disabled=true;accountMessage.textContent="Checking username...";try{await window.reserveCzxUsername(username);localStorage.setItem("czxAccount",JSON.stringify({username,password}));accountMessage.textContent="Account created.";updateAccountUI()}catch(err){accountMessage.textContent=err.message||"That username is already taken."}finally{accountSubmit.disabled=false}return}if(!existing||existing.username!==username||existing.password!==password){accountMessage.textContent="Incorrect username or password.";return}accountMessage.textContent="Signed in.";updateAccountUI()});
-    profileFile.addEventListener("change",()=>{const file=profileFile.files[0];if(!file||!file.type.startsWith("image/"))return;if(file.size>3*1024*1024){profileMessage.textContent="Profile picture must be 3 MB or smaller.";profileFile.value="";return}const reader=new FileReader();reader.onload=()=>{localStorage.setItem("czxProfilePicture",reader.result);profileMessage.textContent="Profile picture saved.";updateAccountUI()};reader.readAsDataURL(file)});
+    profileFile.addEventListener("change",()=>{
+      const file=profileFile.files[0];
+      if(!file||!file.type.startsWith("image/"))return;
+      if(file.size>3*1024*1024){profileMessage.textContent="Profile picture must be 3 MB or smaller.";profileFile.value="";return}
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const img=new Image();
+        img.onload=()=>{
+          const size=160;
+          const canvas=document.createElement("canvas");
+          canvas.width=size;canvas.height=size;
+          const ctx=canvas.getContext("2d");
+          const scale=Math.min(size/img.naturalWidth,size/img.naturalHeight);
+          const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+          ctx.clearRect(0,0,size,size);
+          ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+          const smallPfp=canvas.toDataURL("image/jpeg",0.75);
+          localStorage.setItem("czxProfilePicture",smallPfp);
+          profileMessage.textContent="Profile picture saved.";
+          updateAccountUI();
+        };
+        img.src=reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
     removeProfileButton.addEventListener("click",()=>{localStorage.removeItem("czxProfilePicture");profileFile.value="";profileMessage.textContent="Profile picture removed.";updateAccountUI()});signOutButton.addEventListener("click",()=>{localStorage.removeItem("czxAccount");accountUsername.value="";accountPassword.value="";setAccountMode("signin");updateAccountUI()});setAccountMode("signin");updateAccountUI();
     const savedWallpaper=localStorage.getItem("czxWallpaper");if(savedWallpaper){document.body.style.backgroundImage=`url("${savedWallpaper}")`;document.body.classList.add("custom-wallpaper")}
     const calcButton=document.getElementById("calcButton"),calcOverlay=document.getElementById("calcOverlay"),closeCalc=document.getElementById("closeCalc"),calcDisplay=document.getElementById("calcDisplay");let calcExpr="";function renderCalc(){calcDisplay.textContent=calcExpr||"0"}function calcResult(){try{let safe=calcExpr.replaceAll("×","*").replaceAll("÷","/").replaceAll("−","-").replaceAll("π","Math.PI").replaceAll("√","Math.sqrt(").replace(/\be\b/g,"Math.E").replace(/sin\(/g,"Math.sin(Math.PI/180*").replace(/cos\(/g,"Math.cos(Math.PI/180*").replace(/tan\(/g,"Math.tan(Math.PI/180*").replace(/log\(/g,"Math.log10(").replace(/ln\(/g,"Math.log(").replaceAll("^","**");safe=safe.replace(/(\d+(?:\.\d+)?)!/g,"fact($1)");if(!/^[0-9+\-*/().\sA-Za-z_]+$/.test(safe))throw new Error();const value=Function("fact","return ("+safe+")")(n=>{if(!Number.isInteger(n)||n<0||n>170)throw new Error();let r=1;for(let i=2;i<=n;i++)r*=i;return r});if(!Number.isFinite(value))throw new Error();calcExpr=String(Math.round(value*1e12)/1e12)}catch{calcExpr="";calcDisplay.textContent="Error";return}renderCalc()}document.querySelectorAll("[data-calc]").forEach(b=>b.addEventListener("click",()=>{const v=b.dataset.calc;if(v==="C"){calcExpr="";renderCalc()}else if(v==="⌫"){calcExpr=calcExpr.slice(0,-1);renderCalc()}else if(v==="="){calcResult()}else{if(calcExpr.length<32)calcExpr+=v;renderCalc()}}));calcButton.addEventListener("click",()=>calcOverlay.hidden=false);closeCalc.addEventListener("click",()=>calcOverlay.hidden=true);calcOverlay.addEventListener("click",e=>{if(e.target===calcOverlay)calcOverlay.hidden=true});
