@@ -54,8 +54,8 @@
 </div>
 
 <div class="chat-messages" id="messages" aria-live="polite"><div class="chat-message chat-bot">Create or sign in to your czX account before using chat.</div></div>
-<div class="chat-image-preview" id="imagePreview"><span id="imagePreviewName">Image selected</span><button type="button" id="removeImage" aria-label="Remove image">✕</button></div>
-<form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="500" placeholder="Type a message..." autocomplete="off" disabled><input type="file" id="imageInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden><button class="chat-image-button" id="imageButton" type="button" title="Send image" disabled>↑</button><button class="save-button chat-send" id="send" type="submit" disabled>Send</button></form>
+<div class="chat-image-preview" id="imagePreview"><span id="imagePreviewName">File selected</span><button type="button" id="removeImage" aria-label="Remove image">✕</button></div>
+<form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="500" placeholder="Type a message..." autocomplete="off" disabled><input type="file" id="imageInput" accept="*/*" hidden><button class="chat-image-button" id="imageButton" type="button" title="Send file" disabled>↑</button><button class="save-button chat-send" id="send" type="submit" disabled>Send</button></form>
 <div class="chat-status" id="status" aria-live="polite"></div>
 <div id="accountGate" style="display:none;text-align:center;margin-top:10px"><a class="save-button" href="/?account=1">Create / Sign in to your account</a></div>
 </section>
