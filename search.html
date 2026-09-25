@@ -47,14 +47,39 @@
       cursor: pointer;
     }
 
-    iframe {
-      display: block;
+    .results {
       width: min(1000px, 94vw);
-      height: 700px;
       margin: 18px auto 40px;
-      border: none;
-      background: #fff;
+    }
+    .result {
+      background: #130b1d;
+      border: 1px solid rgba(153,77,255,.2);
       border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .result a {
+      color: #b982ff;
+      font-size: 19px;
+      text-decoration: none;
+    }
+    .result a:hover { text-decoration: underline; }
+    .result-url {
+      color: #79c779;
+      font-size: 13px;
+      margin-top: 5px;
+      word-break: break-all;
+    }
+    .result-snippet {
+      color: #c8c1d0;
+      margin-top: 8px;
+      line-height: 1.45;
+    }
+    .search-message {
+      width: min(1000px, 94vw);
+      margin: 20px auto;
+      color: #aaa;
+      text-align: center;
     }
   </style>
 </head>
@@ -72,47 +97,80 @@
 </header>
 
 <main class="search-wrap">
-  <form class="search-box" action="https://duckduckgo.com/" method="get">
-    <input
-      name="q"
-      type="search"
-      placeholder="Search DuckDuckGo..."
-      required
-      autocomplete="off"
-    >
+  <form class="search-box" id="searchForm">
+    <input name="q" type="search" placeholder="Search DuckDuckGo..." required autocomplete="off">
     <button type="submit">Search</button>
   </form>
+  <div id="results" class="results"></div>
 </main>
 
 <script>
-  const form = document.querySelector(".search-box");
-  form.addEventListener("submit", function(event) {
-    event.preventDefault();
-    const query = form.querySelector('input[name="q"]').value.trim();
-    if (!query) return;
+const form = document.getElementById("searchForm");
+const input = form.querySelector('input[name="q"]');
+const results = document.getElementById("results");
 
-    const url = "/search.html?q=" + encodeURIComponent(query);
-    window.history.pushState({ query }, "", url);
-    showSearchState(query);
-  });
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[ch]));
+}
 
-  function showSearchState(query) {
-    const old = document.getElementById("search-status");
-    if (old) old.remove();
+async function runSearch(query, updateUrl = true) {
+  query = query.trim();
+  if (!query) return;
 
-    const status = document.createElement("p");
-    status.id = "search-status";
-    status.textContent = 'Searching DuckDuckGo for "' + query + '"…';
-    status.style.cssText = "width:min(1000px,94vw);margin:18px auto;color:#bbb;text-align:center;";
-    form.insertAdjacentElement("afterend", status);
+  if (updateUrl) {
+    history.pushState({query}, "", "/search.html?q=" + encodeURIComponent(query));
   }
 
-  const params = new URLSearchParams(window.location.search);
-  const query = params.get("q");
-  if (query) {
-    form.querySelector('input[name="q"]').value = query;
-    showSearchState(query);
+  results.innerHTML = '<div class="search-message">Searching DuckDuckGo for "' +
+    escapeHtml(query) + '"…</div>';
+
+  try {
+    const response = await fetch("/api/search?q=" + encodeURIComponent(query), {
+      headers: { "Accept": "application/json" }
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) throw new Error(data.error || "Search failed.");
+
+    if (!data.results.length) {
+      results.innerHTML = '<div class="search-message">No results found for "' +
+        escapeHtml(query) + '".</div>';
+      return;
+    }
+
+    results.innerHTML = data.results.map(result => {
+      const safeUrl = escapeHtml(result.url);
+      return '<article class="result">' +
+        '<a href="' + safeUrl + '" target="_self" rel="noopener noreferrer">' +
+        escapeHtml(result.title) + '</a>' +
+        '<div class="result-url">' + safeUrl + '</div>' +
+        (result.snippet ? '<div class="result-snippet">' + escapeHtml(result.snippet) + '</div>' : '') +
+        '</article>';
+    }).join("");
+  } catch (error) {
+    results.innerHTML = '<div class="search-message">Search failed: ' +
+      escapeHtml(error.message) + '</div>';
   }
+}
+
+form.addEventListener("submit", event => {
+  event.preventDefault();
+  runSearch(input.value);
+});
+
+window.addEventListener("popstate", () => {
+  const query = new URLSearchParams(location.search).get("q") || "";
+  input.value = query;
+  if (query) runSearch(query, false);
+});
+
+const initialQuery = new URLSearchParams(location.search).get("q") || "";
+if (initialQuery) {
+  input.value = initialQuery;
+  runSearch(initialQuery, false);
+}
 </script>
 </body>
 </html>
