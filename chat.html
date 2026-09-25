@@ -16,7 +16,7 @@
 .chat-message{max-width:82%;padding:12px 15px;border-radius:16px;line-height:1.5;white-space:pre-wrap}
 .chat-row{display:flex;align-items:flex-end;gap:8px}.chat-row.chat-row-user{justify-content:flex-end}.chat-pfp{display:block;width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;border:1px solid rgba(181,119,255,.35);background:#171022}.chat-pfp-fallback{display:grid;place-items:center;font-size:17px}.chat-row .chat-message{max-width:calc(82% - 42px)}
 .chat-bot{align-self:flex-start;background:#191020;color:#ddd}.chat-user{align-self:flex-end;background:#6f2fc6;color:#fff}
-.chat-form{display:flex;gap:9px;margin-top:12px;align-items:center}.chat-image-button{min-width:42px;padding:10px;border:1px solid rgba(153,77,255,.35);border-radius:11px;background:#171022;color:#fff;cursor:pointer;font-size:16px}.chat-image-button:hover{background:#241536;border-color:rgba(181,119,255,.65)}.chat-image-preview{display:none;align-items:center;gap:8px;margin-top:7px;padding:7px 10px;border-radius:10px;background:#171022;color:#bca9d1;font-size:11px}.chat-image-preview.show{display:flex}.chat-image-preview button{border:0;background:transparent;color:#ff8fba;cursor:pointer;font-size:14px}.chat-file-link{display:block;margin-top:7px;color:#d8b8ff;text-decoration:none;word-break:break-all}.chat-file-link:hover{text-decoration:underline}.chat-message-image{display:block;max-width:min(360px,100%);max-height:320px;margin-top:6px;border-radius:12px;object-fit:contain}.chat-input{flex:1;margin:0}.chat-send{min-width:85px}.chat-status{min-height:17px;color:#998ba8;font-size:11px;margin-top:6px}
+.chat-form{display:flex;gap:9px;margin-top:12px;align-items:center}.chat-image-button{min-width:42px;padding:10px;border:1px solid rgba(153,77,255,.35);border-radius:11px;background:#171022;color:#fff;cursor:pointer;font-size:16px}.chat-image-button:hover{background:#241536;border-color:rgba(181,119,255,.65)}.chat-image-preview{display:none;align-items:center;gap:8px;margin-top:7px;padding:7px 10px;border-radius:10px;background:#171022;color:#bca9d1;font-size:11px}.chat-image-preview.show{display:flex}.chat-image-preview button{border:0;background:transparent;color:#ff8fba;cursor:pointer;font-size:14px}.chat-message-image{display:block;max-width:min(360px,100%);max-height:320px;margin-top:6px;border-radius:12px;object-fit:contain}.chat-input{flex:1;margin:0}.chat-send{min-width:85px}.chat-status{min-height:17px;color:#998ba8;font-size:11px;margin-top:6px}
 .font-button{border:1px solid rgba(153,77,255,.35);border-radius:11px;padding:10px 13px;background:#171022;color:#eee;font:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
 .font-button:hover{transform:translateY(-1px);background:#241536;border-color:rgba(181,119,255,.65)}
 .font-picker{position:fixed;z-index:200;top:88px;right:calc((100vw - min(920px,92vw))/2);width:250px;padding:10px;border:1px solid rgba(153,77,255,.45);border-radius:18px;background:rgba(12,5,24,.98);box-shadow:0 22px 70px rgba(0,0,0,.55);backdrop-filter:blur(18px)}
@@ -77,11 +77,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
 const messages=document.getElementById("messages"),form=document.getElementById("form"),input=document.getElementById("input"),send=document.getElementById("send"),status=document.getElementById("status");
 const imageInput=document.getElementById("imageInput"),imageButton=document.getElementById("imageButton"),imagePreview=document.getElementById("imagePreview"),imagePreviewName=document.getElementById("imagePreviewName"),removeImage=document.getElementById("removeImage");
-let selectedFile=null;
+let selectedImage="";
 const accountGate=document.getElementById("accountGate");
 const fontButton=document.getElementById("fontButton"),fontPicker=document.getElementById("fontPicker");
 const fontOptions=[...document.querySelectorAll(".font-option")];
@@ -145,7 +144,7 @@ document.addEventListener("click",e=>{
   if(!fontPicker.hidden && !fontPicker.contains(e.target) && e.target!==fontButton) fontPicker.hidden=true;
 });
 
-function add(text,role,username="",pfp="",fileUrl="",fileName="",fileType=""){
+function add(text,role,username="",pfp="",image=""){
   const row=document.createElement("div");
   row.className="chat-row "+(role==="user"?"chat-row-user":"");
   let avatarNode;
@@ -179,24 +178,13 @@ function add(text,role,username="",pfp="",fileUrl="",fileName="",fileType=""){
     body.textContent=text;
     el.appendChild(body);
   }
-  if(fileUrl){
-    if(String(fileType||"").startsWith("image/")){
-      const imageEl=document.createElement("img");
-      imageEl.src=fileUrl;
-      imageEl.alt=fileName||"Shared image";
-      imageEl.className="chat-message-image";
-      imageEl.loading="lazy";
-      el.appendChild(imageEl);
-    }else{
-      const fileLink=document.createElement("a");
-      fileLink.href=fileUrl;
-      fileLink.target="_blank";
-      fileLink.rel="noopener";
-      fileLink.download=fileName||"download";
-      fileLink.className="chat-file-link";
-      fileLink.textContent="📎 "+(fileName||"Shared file");
-      el.appendChild(fileLink);
-    }
+  if(image){
+    const imageEl=document.createElement("img");
+    imageEl.src=image;
+    imageEl.alt="Shared image";
+    imageEl.className="chat-message-image";
+    imageEl.loading="lazy";
+    el.appendChild(imageEl);
   }
   if(role==="user") row.append(el,avatarNode); else row.append(avatarNode,el);
   messages.appendChild(row);
@@ -224,7 +212,7 @@ function renderMessages(data){
   messages.innerHTML="";
   const rows=Object.values(data||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   if(!rows.length){add("No messages yet. Say hello!","assistant");return;}
-  rows.forEach(m=>add(String(m.text||""),m.uid===currentUser?.uid?"user":"assistant",String(m.username||"Guest"),String(m.pfp||""),String(m.fileUrl||""),String(m.fileName||""),String(m.fileType||"")));
+  rows.forEach(m=>add(String(m.text||""),m.uid===currentUser?.uid?"user":"assistant",String(m.username||"Guest"),String(m.pfp||""),String(m.image||"")));
 }
 
 async function startChat(){
@@ -265,13 +253,17 @@ imageInput.addEventListener("change",()=>{
     imageInput.value="";
     return;
   }
-  selectedFile=file;
-  imagePreviewName.textContent=file.name;
-  imagePreview.classList.add("show");
-  status.textContent="File ready to send.";
+  const reader=new FileReader();
+  reader.onload=()=>{
+    selectedImage=String(reader.result||"");
+    imagePreviewName.textContent=file.name;
+    imagePreview.classList.add("show");
+    status.textContent="Image ready to send.";
+  };
+  reader.readAsDataURL(file);
 });
 removeImage.addEventListener("click",()=>{
-  selectedFile=null;
+  selectedImage="";
   imageInput.value="";
   imagePreview.classList.remove("show");
 });
@@ -297,24 +289,15 @@ function compressChatImage(dataUrl){
 form.addEventListener("submit",async e=>{
   e.preventDefault();
   const text=input.value.trim();
-  if((!text&&!selectedFile)||!db||!currentUser||text.length>500)return;
+  if((!text&&!selectedImage)||!db||!currentUser||text.length>500)return;
   send.disabled=true;
   status.textContent="Sending...";
   try{
     const pfp=getChatPfp();
-    let fileUrl="",fileName="",fileType="";
-    if(selectedFile){
-      const storage=getStorage();
-      fileName=selectedFile.name;
-      fileType=selectedFile.type||"application/octet-stream";
-      const safeName=fileName.replace(/[^a-zA-Z0-9._-]/g,"_");
-      const fileRef=storageRef(storage,"chat-files/"+currentUser.uid+"/"+Date.now()+"-"+safeName);
-      await uploadBytes(fileRef,selectedFile,{contentType:fileType});
-      fileUrl=await getDownloadURL(fileRef);
-    }
-    await push(ref(db,"czxChat/messages"),{uid:currentUser.uid,username:getUsername(),pfp:pfp||"",text,fileUrl,fileName,fileType,createdAt:Date.now()});
+    const image=selectedImage?await compressChatImage(selectedImage):"";
+    await push(ref(db,"czxChat/messages"),{uid:currentUser.uid,username:getUsername(),pfp:pfp||"",text,image,createdAt:Date.now()});
     input.value="";
-    selectedFile=null;
+    selectedImage="";
     imageInput.value="";
     imagePreview.classList.remove("show");
     status.textContent="Connected • "+getUsername();
