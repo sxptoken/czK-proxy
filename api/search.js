@@ -30,24 +30,23 @@ module.exports = async (req, res) => {
     }
   };
 
-  const parseResults = (html) => {
+  const addResult = (results, seen, title, href, snippet = "") => {
+    const resultUrl = decodeUrl(href);
+    const cleanTitle = clean(title);
+    if (!/^https?:\\/\\//i.test(resultUrl) || !cleanTitle || seen.has(resultUrl)) return;
+
+    seen.add(resultUrl);
+    results.push({
+      title: cleanTitle,
+      url: resultUrl,
+      snippet: clean(snippet)
+    });
+  };
+
+  const parseHtmlResults = (html) => {
     const results = [];
     const seen = new Set();
 
-    const add = (title, href, snippet = "") => {
-      const resultUrl = decodeUrl(href);
-      const cleanTitle = clean(title);
-      if (!/^https?:\\/\\//i.test(resultUrl) || !cleanTitle || seen.has(resultUrl)) return;
-
-      seen.add(resultUrl);
-      results.push({
-        title: cleanTitle,
-        url: resultUrl,
-        snippet: clean(snippet)
-      });
-    };
-
-    // DuckDuckGo HTML results.
     const htmlLinks = [...html.matchAll(
       /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi
     )];
@@ -58,10 +57,9 @@ module.exports = async (req, res) => {
       const snippet = after.match(
         /class=["'][^"']*result__snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/a>/i
       );
-      add(m[2], m[1], snippet ? snippet[1] : "");
+      addResult(results, seen, m[2], m[1], snippet ? snippet[1] : "");
     }
 
-    // DuckDuckGo Lite results.
     if (!results.length) {
       const liteLinks = [...html.matchAll(
         /<a[^>]+class=["'][^"']*result-link[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi
@@ -73,8 +71,37 @@ module.exports = async (req, res) => {
         const snippet = after.match(
           /class=["'][^"']*result-snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/[^>]+>/i
         );
-        add(m[2], m[1], snippet ? snippet[1] : "");
+        addResult(results, seen, m[2], m[1], snippet ? snippet[1] : "");
       }
+    }
+
+    return results;
+  };
+
+  const parseJinaMarkdown = (markdown) => {
+    const results = [];
+    const seen = new Set();
+
+    // Jina Reader can return the DDG HTML page as Markdown. DDG result
+    // links are ordinary Markdown links, so keep only real http(s) links.
+    const links = [...markdown.matchAll(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g)];
+
+    for (const m of links) {
+      if (results.length >= 10) break;
+
+      const title = clean(m[1]);
+      const href = decodeUrl(m[2]);
+
+      // Ignore navigation/utility links that are not actual search results.
+      if (
+        !title ||
+        /^(duckduckgo|privacy|terms|settings|feedback|next|previous|more)$/i.test(title) ||
+        /duckduckgo\\.com/i.test(href)
+      ) {
+        continue;
+      }
+
+      addResult(results, seen, title, href, "");
     }
 
     return results;
@@ -85,46 +112,40 @@ module.exports = async (req, res) => {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "same-origin",
-    "Sec-Fetch-User": "?1"
-  };
-
-  const cookieHeader = (response) => {
-    const values = typeof response.headers.getSetCookie === "function"
-      ? response.headers.getSetCookie()
-      : [];
-    return values
-      .map(v => v.split(";")[0])
-      .filter(Boolean)
-      .join("; ");
-  };
-
-  const hiddenFields = (html) => {
-    const fields = {};
-    const inputs = [...html.matchAll(
-      /<input\\b[^>]*type=["']hidden["'][^>]*>/gi
-    )];
-
-    for (const input of inputs) {
-      const name = input[0].match(/\\bname=["']([^"']+)["']/i);
-      if (!name) continue;
-      const value = input[0].match(/\\bvalue=["']([^"']*)["']/i);
-      fields[name[1]] = value ? value[1] : "";
-    }
-
-    return fields;
+    "Pragma": "no-cache"
   };
 
   try {
-    const endpoint = "https://html.duckduckgo.com/html/";
+    // Primary path: have Jina Reader fetch DuckDuckGo's no-JS HTML page.
+    // This avoids Vercel's serverless IP being rejected by DDG directly.
+    const ddgUrl = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
+    const jinaUrl = "https://r.jina.ai/" + ddgUrl;
 
-    // First load the search form so DDG can provide its current hidden
-    // parameters/cookies. This is important because DDG changes its
-    // no-JS form and bot checks from time to time.
-    const intro = await fetch(endpoint, {
+    const jinaResponse = await fetch(jinaUrl, {
+      method: "GET",
+      headers: {
+        "User-Agent": browserHeaders["User-Agent"],
+        "Accept": "text/plain,text/markdown;q=0.9,*/*;q=0.8",
+        "X-Respond-With": "markdown"
+      },
+      redirect: "follow"
+    });
+
+    if (jinaResponse.ok) {
+      const markdown = await jinaResponse.text();
+      const results = parseJinaMarkdown(markdown);
+
+      if (results.length) {
+        return res.status(200).json({ ok: true, query: q, results });
+      }
+
+      console.error("Jina fetched DDG but no results were parsed. Response length:", markdown.length);
+    } else {
+      console.error("Jina Reader HTTP", jinaResponse.status);
+    }
+
+    // Fallback: try DDG directly as well.
+    const direct = await fetch(ddgUrl, {
       method: "GET",
       headers: {
         ...browserHeaders,
@@ -133,44 +154,18 @@ module.exports = async (req, res) => {
       redirect: "follow"
     });
 
-    if (!intro.ok) {
-      throw new Error("DuckDuckGo form HTTP " + intro.status);
+    if (direct.ok) {
+      const html = await direct.text();
+      const results = parseHtmlResults(html);
+
+      if (results.length) {
+        return res.status(200).json({ ok: true, query: q, results });
+      }
+
+      console.error("Direct DDG returned no parsed results. Response length:", html.length);
+    } else {
+      console.error("Direct DDG HTTP", direct.status);
     }
-
-    const introHtml = await intro.text();
-    const fields = hiddenFields(introHtml);
-
-    fields.q = q;
-    fields.kl = fields.kl || "us-en";
-    fields.b = "";
-
-    const cookies = cookieHeader(intro);
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        ...browserHeaders,
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Referer": "https://html.duckduckgo.com/html/",
-        "Origin": "https://html.duckduckgo.com",
-        ...(cookies ? { Cookie: cookies } : {})
-      },
-      body: new URLSearchParams(fields).toString(),
-      redirect: "follow"
-    });
-
-    if (!response.ok) {
-      throw new Error("DuckDuckGo search HTTP " + response.status);
-    }
-
-    const html = await response.text();
-    const results = parseResults(html);
-
-    if (results.length) {
-      return res.status(200).json({ ok: true, query: q, results });
-    }
-
-    console.error("DuckDuckGo returned no parsed results. Response length:", html.length);
 
     return res.status(502).json({
       ok: false,
