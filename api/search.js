@@ -22,178 +22,165 @@ module.exports = async (req, res) => {
 
   const decodeUrl = (value) => {
     try {
-      const absolute = new URL(value, "https://duckduckgo.com/");
+      const absolute = new URL(value, "https://html.duckduckgo.com/");
       const uddg = absolute.searchParams.get("uddg");
-      if (uddg) return decodeURIComponent(uddg);
-
-      // DDG sometimes puts the destination in a /l/?uddg=... redirect.
-      if (absolute.pathname === "/l/" && absolute.searchParams.has("uddg")) {
-        return decodeURIComponent(absolute.searchParams.get("uddg"));
-      }
-
-      return absolute.href;
+      return uddg ? decodeURIComponent(uddg) : absolute.href;
     } catch {
       return value;
     }
   };
 
-  const addResult = (results, seen, title, href, snippet) => {
-    const resultUrl = decodeUrl(href);
-    if (!/^https?:\\/\\//i.test(resultUrl)) return;
-    if (seen.has(resultUrl)) return;
-
-    const cleanTitle = clean(title);
-    if (!cleanTitle) return;
-
-    seen.add(resultUrl);
-    results.push({
-      title: cleanTitle,
-      url: resultUrl,
-      snippet: clean(snippet || "")
-    });
-  };
-
-  const parseHtmlResults = (html) => {
+  const parseResults = (html) => {
     const results = [];
     const seen = new Set();
 
-    // Current DuckDuckGo HTML result markup.
-    const resultBlocks = html.match(/<div[^>]+class=["'][^"']*results_links[^"']*["'][^>]*>[\\s\\S]*?<\\/div>\\s*(?=<div[^>]+class=|$)/gi) || [];
+    const add = (title, href, snippet = "") => {
+      const resultUrl = decodeUrl(href);
+      const cleanTitle = clean(title);
+      if (!/^https?:\\/\\//i.test(resultUrl) || !cleanTitle || seen.has(resultUrl)) return;
 
-    for (const block of resultBlocks) {
+      seen.add(resultUrl);
+      results.push({
+        title: cleanTitle,
+        url: resultUrl,
+        snippet: clean(snippet)
+      });
+    };
+
+    // DuckDuckGo HTML results.
+    const htmlLinks = [...html.matchAll(
+      /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi
+    )];
+
+    for (const m of htmlLinks) {
       if (results.length >= 10) break;
-
-      const link = block.match(
-        /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/i
+      const after = html.slice(m.index + m[0].length, m.index + m[0].length + 5000);
+      const snippet = after.match(
+        /class=["'][^"']*result__snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/a>/i
       );
-      if (!link) continue;
-
-      const snippet = block.match(
-        /<a[^>]+class=["'][^"']*result__snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/a>/i
-      );
-
-      addResult(results, seen, link[2], link[1], snippet ? snippet[1] : "");
+      add(m[2], m[1], snippet ? snippet[1] : "");
     }
 
-    // Fallback if DDG changes the surrounding result container.
+    // DuckDuckGo Lite results.
     if (!results.length) {
-      const links = [...html.matchAll(
-        /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi
+      const liteLinks = [...html.matchAll(
+        /<a[^>]+class=["'][^"']*result-link[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi
       )];
 
-      for (const match of links) {
+      for (const m of liteLinks) {
         if (results.length >= 10) break;
-
-        const after = html.slice(match.index + match[0].length, match.index + match[0].length + 3000);
+        const after = html.slice(m.index + m[0].length, m.index + m[0].length + 5000);
         const snippet = after.match(
-          /<a[^>]+class=["'][^"']*result__snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/a>/i
+          /class=["'][^"']*result-snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/[^>]+>/i
         );
-
-        addResult(results, seen, match[2], match[1], snippet ? snippet[1] : "");
+        add(m[2], m[1], snippet ? snippet[1] : "");
       }
     }
 
     return results;
   };
 
-  const parseLiteResults = (html) => {
-    const results = [];
-    const seen = new Set();
-
-    const links = [...html.matchAll(
-      /<a[^>]+class=["'][^"']*result-link[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi
-    )];
-
-    for (const match of links) {
-      if (results.length >= 10) break;
-
-      const after = html.slice(match.index + match[0].length, match.index + match[0].length + 3500);
-      const snippet = after.match(
-        /<(?:td|div|a)[^>]+class=["'][^"']*result-snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/(?:td|div|a)>/i
-      );
-
-      addResult(results, seen, match[2], match[1], snippet ? snippet[1] : "");
-    }
-
-    return results;
-  };
-
-  const headers = {
+  const browserHeaders = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://html.duckduckgo.com/",
-    "Origin": "https://html.duckduckgo.com",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
     "Sec-Fetch-Dest": "document",
     "Sec-Fetch-Mode": "navigate",
     "Sec-Fetch-Site": "same-origin",
     "Sec-Fetch-User": "?1"
   };
 
+  const cookieHeader = (response) => {
+    const values = typeof response.headers.getSetCookie === "function"
+      ? response.headers.getSetCookie()
+      : [];
+    return values
+      .map(v => v.split(";")[0])
+      .filter(Boolean)
+      .join("; ");
+  };
+
+  const hiddenFields = (html) => {
+    const fields = {};
+    const inputs = [...html.matchAll(
+      /<input\\b[^>]*type=["']hidden["'][^>]*>/gi
+    )];
+
+    for (const input of inputs) {
+      const name = input[0].match(/\\bname=["']([^"']+)["']/i);
+      if (!name) continue;
+      const value = input[0].match(/\\bvalue=["']([^"']*)["']/i);
+      fields[name[1]] = value ? value[1] : "";
+    }
+
+    return fields;
+  };
+
   try {
-    // DDG's HTML endpoint is the no-JS search service. It returns normal
-    // result pages without sending the user away from czX.
-    const response = await fetch("https://html.duckduckgo.com/html/", {
-      method: "POST",
+    const endpoint = "https://html.duckduckgo.com/html/";
+
+    // First load the search form so DDG can provide its current hidden
+    // parameters/cookies. This is important because DDG changes its
+    // no-JS form and bot checks from time to time.
+    const intro = await fetch(endpoint, {
+      method: "GET",
       headers: {
-        ...headers,
-        "Content-Type": "application/x-www-form-urlencoded"
+        ...browserHeaders,
+        "Referer": "https://html.duckduckgo.com/"
       },
-      body: new URLSearchParams({
-        q,
-        b: "",
-        kl: "us-en"
-      }).toString(),
       redirect: "follow"
     });
 
-    if (response.ok) {
-      const html = await response.text();
-      const results = parseHtmlResults(html);
-
-      if (results.length) {
-        return res.status(200).json({ ok: true, query: q, results });
-      }
-
-      // Some DDG responses still use the Lite markup.
-      const liteResults = parseLiteResults(html);
-      if (liteResults.length) {
-        return res.status(200).json({ ok: true, query: q, results: liteResults });
-      }
+    if (!intro.ok) {
+      throw new Error("DuckDuckGo form HTTP " + intro.status);
     }
 
-    // Fallback to Lite with a normal GET request. This also handles
-    // occasional changes to DDG's HTML endpoint.
-    const lite = await fetch(
-      "https://lite.duckduckgo.com/lite/?q=" + encodeURIComponent(q),
-      {
-        method: "GET",
-        headers: {
-          ...headers,
-          "Referer": "https://lite.duckduckgo.com/"
-        },
-        redirect: "follow"
-      }
-    );
+    const introHtml = await intro.text();
+    const fields = hiddenFields(introHtml);
 
-    if (lite.ok) {
-      const html = await lite.text();
-      const results = parseLiteResults(html);
+    fields.q = q;
+    fields.kl = fields.kl || "us-en";
+    fields.b = "";
 
-      if (results.length) {
-        return res.status(200).json({ ok: true, query: q, results });
-      }
+    const cookies = cookieHeader(intro);
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        ...browserHeaders,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Referer": "https://html.duckduckgo.com/html/",
+        "Origin": "https://html.duckduckgo.com",
+        ...(cookies ? { Cookie: cookies } : {})
+      },
+      body: new URLSearchParams(fields).toString(),
+      redirect: "follow"
+    });
+
+    if (!response.ok) {
+      throw new Error("DuckDuckGo search HTTP " + response.status);
     }
+
+    const html = await response.text();
+    const results = parseResults(html);
+
+    if (results.length) {
+      return res.status(200).json({ ok: true, query: q, results });
+    }
+
+    console.error("DuckDuckGo returned no parsed results. Response length:", html.length);
 
     return res.status(502).json({
       ok: false,
-      error: "DuckDuckGo returned no searchable results."
+      error: "DuckDuckGo did not return searchable results."
     });
   } catch (error) {
     console.error("czX search error:", error);
     return res.status(502).json({
       ok: false,
-      error: "DuckDuckGo search is temporarily unavailable."
+      error: "DuckDuckGo could not be reached right now."
     });
   }
 };
