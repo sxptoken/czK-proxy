@@ -42,7 +42,7 @@ body{margin:0;background:#08040f;color:#fff;font-family:Inter,system-ui,sans-ser
 <script>
 const input=document.getElementById("query"),form=document.getElementById("searchForm"),viewer=document.getElementById("viewer");
 function openSearch(q){
- const target="https://duckduckgo.com/?q="+encodeURIComponent(q||"");
+ const target=q ? "https://html.duckduckgo.com/html/?q="+encodeURIComponent(q) : "https://duckduckgo.com/";
  viewer.src="/api/proxy?url="+encodeURIComponent(target);
 }
 form.addEventListener("submit",e=>{e.preventDefault();const q=input.value.trim();if(q)openSearch(q)});
