@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DuckDuckGo Search • czX</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      margin: 0;
+      background: #08040f;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    .search-wrap {
+      padding-top: 90px;
+    }
+
+    .search-box {
+      display: flex;
+      padding: 15px;
+      margin: 0 auto;
+      width: min(1000px, 94vw);
+      background: #130b1d;
+      border: 1px solid rgba(153,77,255,.25);
+      border-radius: 14px;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #aaa;
+      border-radius: 6px 0 0 6px;
+      background: #fff;
+      color: #111;
+    }
+
+    .search-box button {
+      padding: 12px 20px;
+      border: none;
+      background: #de5833;
+      color: white;
+      font-size: 16px;
+      border-radius: 0 6px 6px 0;
+      cursor: pointer;
+    }
+
+    iframe {
+      display: block;
+      width: min(1000px, 94vw);
+      height: 700px;
+      margin: 18px auto 40px;
+      border: none;
+      background: #fff;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/" aria-label="czX home">
+    <span class="brand-star">✦</span><span>czX</span>
+  </a>
+  <nav class="main-nav" aria-label="Main navigation">
+    <a class="nav-link" href="/">⌂ <span>Home</span></a>
+    <a class="nav-link" href="/games.html">🎮 <span>Games</span></a>
+    <a class="nav-link active" href="/search.html">🔍 <span>Search</span></a>
+  </nav>
+</header>
+
+<main class="search-wrap">
+  <form class="search-box" onsubmit="searchDuckDuckGo(event)">
+    <input
+      id="searchInput"
+      type="search"
+      placeholder="Search DuckDuckGo..."
+      required
+    >
+    <button type="submit">Search</button>
+  </form>
+
+  <iframe
+    id="resultsFrame"
+    title="DuckDuckGo search results">
+  </iframe>
+</main>
+
+<script>
+  function searchDuckDuckGo(event) {
+    event.preventDefault();
+
+    const query = document.getElementById("searchInput").value;
+    const url = "https://duckduckgo.com/?q=" + encodeURIComponent(query);
+
+    document.getElementById("resultsFrame").src = url;
+  }
+</script>
+
+</body>
+</html>
