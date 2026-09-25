@@ -16,7 +16,7 @@
 .chat-message{max-width:82%;padding:12px 15px;border-radius:16px;line-height:1.5;white-space:pre-wrap}
 .chat-row{display:flex;align-items:flex-end;gap:8px}.chat-row.chat-row-user{justify-content:flex-end}.chat-pfp{display:block;width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;border:1px solid rgba(181,119,255,.35);background:#171022}.chat-pfp-fallback{display:grid;place-items:center;font-size:17px}.chat-row .chat-message{max-width:calc(82% - 42px)}
 .chat-bot{align-self:flex-start;background:#191020;color:#ddd}.chat-user{align-self:flex-end;background:#6f2fc6;color:#fff}
-.chat-form{display:flex;gap:9px;margin-top:12px}.chat-input{flex:1;margin:0}.chat-send{min-width:85px}.chat-status{min-height:17px;color:#998ba8;font-size:11px;margin-top:6px}
+.chat-form{display:flex;gap:9px;margin-top:12px;align-items:center}.chat-image-button{min-width:42px;padding:10px;border:1px solid rgba(153,77,255,.35);border-radius:11px;background:#171022;color:#fff;cursor:pointer;font-size:16px}.chat-image-button:hover{background:#241536;border-color:rgba(181,119,255,.65)}.chat-image-preview{display:none;align-items:center;gap:8px;margin-top:7px;padding:7px 10px;border-radius:10px;background:#171022;color:#bca9d1;font-size:11px}.chat-image-preview.show{display:flex}.chat-image-preview button{border:0;background:transparent;color:#ff8fba;cursor:pointer;font-size:14px}.chat-message-image{display:block;max-width:min(360px,100%);max-height:320px;margin-top:6px;border-radius:12px;object-fit:contain}.chat-input{flex:1;margin:0}.chat-send{min-width:85px}.chat-status{min-height:17px;color:#998ba8;font-size:11px;margin-top:6px}
 .font-button{border:1px solid rgba(153,77,255,.35);border-radius:11px;padding:10px 13px;background:#171022;color:#eee;font:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
 .font-button:hover{transform:translateY(-1px);background:#241536;border-color:rgba(181,119,255,.65)}
 .font-picker{position:fixed;z-index:200;top:88px;right:calc((100vw - min(920px,92vw))/2);width:250px;padding:10px;border:1px solid rgba(153,77,255,.45);border-radius:18px;background:rgba(12,5,24,.98);box-shadow:0 22px 70px rgba(0,0,0,.55);backdrop-filter:blur(18px)}
@@ -54,7 +54,8 @@
 </div>
 
 <div class="chat-messages" id="messages" aria-live="polite"><div class="chat-message chat-bot">Create or sign in to your czX account before using chat.</div></div>
-<form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="500" placeholder="Type a message..." autocomplete="off" required disabled><button class="save-button chat-send" id="send" type="submit" disabled>Send</button></form>
+<div class="chat-image-preview" id="imagePreview"><span id="imagePreviewName">Image selected</span><button type="button" id="removeImage" aria-label="Remove image">✕</button></div>
+<form class="chat-form" id="form"><input class="text-input chat-input" id="input" maxlength="500" placeholder="Type a message..." autocomplete="off" disabled><input type="file" id="imageInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden><button class="chat-image-button" id="imageButton" type="button" title="Send image" disabled>🖼️</button><button class="save-button chat-send" id="send" type="submit" disabled>Send</button></form>
 <div class="chat-status" id="status" aria-live="polite"></div>
 <div id="accountGate" style="display:none;text-align:center;margin-top:10px"><a class="save-button" href="/?account=1">Create / Sign in to your account</a></div>
 </section>
@@ -78,6 +79,8 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
 const messages=document.getElementById("messages"),form=document.getElementById("form"),input=document.getElementById("input"),send=document.getElementById("send"),status=document.getElementById("status");
+const imageInput=document.getElementById("imageInput"),imageButton=document.getElementById("imageButton"),imagePreview=document.getElementById("imagePreview"),imagePreviewName=document.getElementById("imagePreviewName"),removeImage=document.getElementById("removeImage");
+let selectedImage="";
 const accountGate=document.getElementById("accountGate");
 const fontButton=document.getElementById("fontButton"),fontPicker=document.getElementById("fontPicker");
 const fontOptions=[...document.querySelectorAll(".font-option")];
@@ -108,6 +111,7 @@ const storedAccount=getStoredAccount();
 if(!storedAccount){
   input.disabled=true;
   send.disabled=true;
+  imageButton.disabled=true;
   accountGate.style.display="block";
   status.textContent="Account required to use chat.";
 }
@@ -140,7 +144,7 @@ document.addEventListener("click",e=>{
   if(!fontPicker.hidden && !fontPicker.contains(e.target) && e.target!==fontButton) fontPicker.hidden=true;
 });
 
-function add(text,role,username="",pfp=""){
+function add(text,role,username="",pfp="",image=""){
   const row=document.createElement("div");
   row.className="chat-row "+(role==="user"?"chat-row-user":"");
   let avatarNode;
@@ -169,9 +173,19 @@ function add(text,role,username="",pfp=""){
     name.style.marginBottom="3px";
     el.appendChild(name);
   }
-  const body=document.createElement("span");
-  body.textContent=text;
-  el.appendChild(body);
+  if(text){
+    const body=document.createElement("span");
+    body.textContent=text;
+    el.appendChild(body);
+  }
+  if(image){
+    const imageEl=document.createElement("img");
+    imageEl.src=image;
+    imageEl.alt="Shared image";
+    imageEl.className="chat-message-image";
+    imageEl.loading="lazy";
+    el.appendChild(imageEl);
+  }
   if(role==="user") row.append(el,avatarNode); else row.append(avatarNode,el);
   messages.appendChild(row);
   messages.scrollTop=messages.scrollHeight;
@@ -198,7 +212,7 @@ function renderMessages(data){
   messages.innerHTML="";
   const rows=Object.values(data||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   if(!rows.length){add("No messages yet. Say hello!","assistant");return;}
-  rows.forEach(m=>add(String(m.text||""),m.uid===currentUser?.uid?"user":"assistant",String(m.username||"Guest"),String(m.pfp||"")));
+  rows.forEach(m=>add(String(m.text||""),m.uid===currentUser?.uid?"user":"assistant",String(m.username||"Guest"),String(m.pfp||""),String(m.image||"")));
 }
 
 async function startChat(){
@@ -220,6 +234,7 @@ async function startChat(){
       });
       input.disabled=false;
       send.disabled=false;
+      imageButton.disabled=false;
     });
   }catch(err){
     status.textContent="Firebase connection failed: "+(err?.message||"check Firebase settings.");
@@ -229,16 +244,62 @@ async function startChat(){
   }
 }
 
+imageButton.addEventListener("click",()=>imageInput.click());
+imageInput.addEventListener("change",()=>{
+  const file=imageInput.files?.[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){
+    status.textContent="Image must be 5 MB or smaller.";
+    imageInput.value="";
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    selectedImage=String(reader.result||"");
+    imagePreviewName.textContent=file.name;
+    imagePreview.classList.add("show");
+    status.textContent="Image ready to send.";
+  };
+  reader.readAsDataURL(file);
+});
+removeImage.addEventListener("click",()=>{
+  selectedImage="";
+  imageInput.value="";
+  imagePreview.classList.remove("show");
+});
+
+function compressChatImage(dataUrl){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=900;
+      const scale=Math.min(1,max/img.naturalWidth,max/img.naturalHeight);
+      const canvas=document.createElement("canvas");
+      canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+      canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+      const ctx=canvas.getContext("2d");
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      resolve(canvas.toDataURL("image/jpeg",0.72));
+    };
+    img.onerror=()=>resolve("");
+    img.src=dataUrl;
+  });
+}
+
 form.addEventListener("submit",async e=>{
   e.preventDefault();
   const text=input.value.trim();
-  if(!text||!db||!currentUser||text.length>500)return;
+  if((!text&&!selectedImage)||!db||!currentUser||text.length>500)return;
   send.disabled=true;
   status.textContent="Sending...";
   try{
     const pfp=getChatPfp();
-    await push(ref(db,"czxChat/messages"),{uid:currentUser.uid,username:getUsername(),pfp:pfp||"",text,createdAt:Date.now()});
+    const image=selectedImage?await compressChatImage(selectedImage):"";
+    await push(ref(db,"czxChat/messages"),{uid:currentUser.uid,username:getUsername(),pfp:pfp||"",text,image,createdAt:Date.now()});
     input.value="";
+    selectedImage="";
+    imageInput.value="";
+    imagePreview.classList.remove("show");
     status.textContent="Connected • "+getUsername();
   }catch(err){
     status.textContent="Message could not be sent. Check your Realtime Database rules.";
