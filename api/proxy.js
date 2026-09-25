@@ -68,7 +68,7 @@ html,body{margin:0;width:100%;height:100%;background:#08090d;color:#fff;font-fam
     }
 
     if (youtubeVideoId && /^[A-Za-z0-9_-]{6,20}$/.test(youtubeVideoId)) {
-      const embedUrl = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=0&rel=0";
+      const embedUrl = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=0&rel=0&origin=https%3A%2F%2Fczk-bay.vercel.app";
       const page = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,7 +89,7 @@ iframe{width:100%;height:100%;border:0}
 <body>
 <div class="player">
   <div class="top"><a class="logo" href="/">czX</a><a class="back" href="javascript:history.back()">← Back</a></div>
-  <div class="video"><iframe src="${embedUrl}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+  <div class="video"><iframe src="${embedUrl}" title="YouTube video" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
 </div>
 </body>
 </html>`;
