@@ -13,14 +13,12 @@ module.exports = async (req, res) => {
     if (!response.ok) throw new Error("Search provider HTTP " + response.status);
 
     const data = await response.json();
-    const items = Array.isArray(data.results) ? data.results :
-      Array.isArray(data.web) ? data.web : [];
+    const items = Array.isArray(data.items) ? data.items : [];
 
     const results = items.slice(0, 10).map(item => ({
       title: typeof item.title === "string" ? item.title : "",
       url: typeof item.url === "string" ? item.url : "",
-      snippet: typeof item.snippet === "string" ? item.snippet :
-        (typeof item.description === "string" ? item.description : "")
+      snippet: typeof item.snippet === "string" ? item.snippet : ""
     })).filter(item => item.title && /^https?:\/\//i.test(item.url));
 
     res.setHeader("Cache-Control", "no-store");
