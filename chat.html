@@ -150,6 +150,7 @@ function add(text,role,username="",pfp=""){
     img.src=pfp;
     img.alt="";
     img.className="chat-pfp";
+    img.onerror=()=>{img.replaceWith(avatar);avatar.textContent="🙂";};
     avatar.replaceWith(img);
   }else{
     avatar.textContent="🙂";
@@ -172,6 +173,27 @@ function add(text,role,username="",pfp=""){
   if(role==="user") row.append(el,avatar); else row.append(avatar,el);
   messages.appendChild(row);
   messages.scrollTop=messages.scrollHeight;
+}
+
+async function getChatPfp(){
+  const pfp=localStorage.getItem("czxProfilePicture")||"";
+  if(!pfp)return "";
+  try{
+    const img=new Image();
+    img.src=pfp;
+    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;});
+    const size=128;
+    const canvas=document.createElement("canvas");
+    canvas.width=size;canvas.height=size;
+    const ctx=canvas.getContext("2d");
+    ctx.clearRect(0,0,size,size);
+    const scale=Math.min(size/img.naturalWidth,size/img.naturalHeight);
+    const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+    ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+    return canvas.toDataURL("image/webp",0.78);
+  }catch{
+    return "";
+  }
 }
 
 function getUsername(){
@@ -229,7 +251,8 @@ form.addEventListener("submit",async e=>{
   send.disabled=true;
   status.textContent="Sending...";
   try{
-    await push(ref(db,"czxChat/messages"),{uid:currentUser.uid,username:getUsername(),pfp:localStorage.getItem("czxProfilePicture")||"",text,createdAt:Date.now()});
+    const pfp=await getChatPfp();
+    await push(ref(db,"czxChat/messages"),{uid:currentUser.uid,username:getUsername(),pfp,text,createdAt:Date.now()});
     input.value="";
     status.textContent="Connected • "+getUsername();
   }catch(err){
