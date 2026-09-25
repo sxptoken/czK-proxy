@@ -50,7 +50,10 @@ html,body{margin:0;width:100%;height:100%;background:#08090d;color:#fff;font-fam
       return res.send(page);
     }
 
-    // YouTube video links use the official embed player.
+    // YouTube pages themselves should stay inside czX, but a normal YouTube
+    // webpage cannot reliably be proxied because its scripts, CSP, and player
+    // requests expect to run directly on YouTube. Open videos in the official
+    // embed player instead.
     let youtubeVideoId = null;
 
     if (
@@ -68,29 +71,29 @@ html,body{margin:0;width:100%;height:100%;background:#08090d;color:#fff;font-fam
     }
 
     if (youtubeVideoId && /^[A-Za-z0-9_-]{6,20}$/.test(youtubeVideoId)) {
-      const embedUrl = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=0&rel=0&origin=https%3A%2F%2Fczk-bay.vercel.app";
+      const embedUrl = "https://www.youtube.com/embed/" + encodeURIComponent(youtubeVideoId) + "?autoplay=0&rel=0&playsinline=1";
       const page = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>czX YouTube</title>
+<title>czX · YouTube</title>
 <style>
-html,body{margin:0;background:#08090d;color:#fff;font-family:Arial,sans-serif;height:100%}
-body{display:flex;align-items:center;justify-content:center}
-.player{width:min(1200px,94vw)}
-.video{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden}
-iframe{width:100%;height:100%;border:0}
-.top{display:flex;justify-content:space-between;align-items:center;padding:14px 0}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#08090d;color:#fff;font-family:Arial,sans-serif}
+body{padding:18px}
+.top{max-width:1200px;margin:0 auto 14px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:24px;font-weight:900;color:#fff;text-decoration:none}
 .back{color:#aeb5c2;text-decoration:none;font-size:14px}
+.video{max-width:1200px;margin:0 auto;background:#000;aspect-ratio:16/9;border-radius:12px;overflow:hidden}
+iframe{width:100%;height:100%;border:0;display:block}
+.note{max-width:1200px;margin:12px auto 0;color:#8f96a3;font-size:13px}
 </style>
 </head>
 <body>
-<div class="player">
-  <div class="top"><a class="logo" href="/">czX</a><a class="back" href="javascript:history.back()">← Back</a></div>
-  <div class="video"><iframe src="${embedUrl}" title="YouTube video" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
-</div>
+<div class="top"><a class="logo" href="/">czX</a><a class="back" href="javascript:history.back()">← Back</a></div>
+<div class="video"><iframe src="${embedUrl}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+<div class="note">YouTube video player</div>
 </body>
 </html>`;
 
