@@ -178,10 +178,9 @@ function add(text,role,username="",pfp=""){
 
 async function getChatPfp(){
   const pfp=localStorage.getItem("czxProfilePicture")||"";
-  if(!pfp || !pfp.startsWith("data:image/"))return "";
+  if(!pfp)return "";
   try{
     const img=new Image();
-    img.crossOrigin="anonymous";
     img.src=pfp;
     await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;});
     const size=128;
@@ -192,7 +191,7 @@ async function getChatPfp(){
     const scale=Math.min(size/img.naturalWidth,size/img.naturalHeight);
     const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
     ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
-    return canvas.toDataURL("image/webp",0.78);
+    return canvas.toDataURL("image/jpeg",0.72);
   }catch{
     return "";
   }
