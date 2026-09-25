@@ -3,24 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DuckDuckGo • czX</title>
-<link rel="stylesheet" href="/style.css">
-<style>
-*{box-sizing:border-box}body{margin:0;background:#08040f;color:#fff;font-family:Inter,system-ui,sans-serif}
-.page{min-height:100vh;padding:100px 20px 50px}.head{width:min(1000px,94vw);margin:auto}.brand{font-size:30px;font-weight:900;margin-bottom:20px}.brand span{color:#9b4dff}
-form{display:flex;gap:10px}.input{flex:1;padding:15px;border-radius:14px;border:1px solid rgba(153,77,255,.5);background:#130b1d;color:#fff;font-size:16px;outline:0}.button{padding:0 22px;border:0;border-radius:14px;background:#7a35d1;color:#fff;font-weight:800;cursor:pointer}.status{margin:18px 0;color:#a99ab7}.results{display:grid;gap:20px}.result{padding:18px;border:1px solid rgba(153,77,255,.22);border-radius:16px;background:#10091a}.result a{color:#cda8ff;font-size:18px;font-weight:800;text-decoration:none}.result a:hover{text-decoration:underline}.url{color:#7fd69a;font-size:12px;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.snippet{color:#c7bdce;font-size:14px;line-height:1.5;margin-top:9px}.empty{text-align:center;padding:60px;color:#9d90a9}
-</style>
+<title>DuckDuckGo HTML • czX</title>
+<meta http-equiv="refresh" content="0;url=/api/proxy?url=https%3A%2F%2Fhtml.duckduckgo.com%2Fhtml%2F">
 </head>
 <body>
-<main class="page"><div class="head">
-<div class="brand">🦆 DuckDuck<span>Go</span></div>
-<form id="form"><input class="input" id="q" placeholder="Search the web" autocomplete="off"><button class="button" type="submit">Search</button></form>
-<div class="status" id="status"></div><section class="results" id="results"></section>
-</div></main>
 <script>
-const form=document.getElementById("form"),q=document.getElementById("q"),status=document.getElementById("status"),results=document.getElementById("results");
-function render(items){results.innerHTML="";if(!items.length){results.innerHTML='<div class="empty">No results found.</div>';return}for(const x of items){const card=document.createElement("article");card.className="result";card.innerHTML='<a></a><div class="url"></div><div class="snippet"></div>';const a=card.querySelector("a");a.textContent=x.title||x.url;a.href="/api/proxy?url="+encodeURIComponent(x.url);card.querySelector(".url").textContent=x.url;card.querySelector(".snippet").textContent=x.snippet||"";results.appendChild(card)}}
-async function search(term){status.textContent="Searching…";results.innerHTML="";try{const r=await fetch("/api/search?q="+encodeURIComponent(term));const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||"Search failed");render(d.results||[]);status.textContent=(d.results||[]).length+" results for “"+term+"”";history.replaceState(null,"","/search.html?q="+encodeURIComponent(term))}catch(e){status.textContent="Search failed";results.innerHTML='<div class="empty">The search service could not be reached right now.</div>'}}
-form.addEventListener("submit",e=>{e.preventDefault();const term=q.value.trim();if(term)search(term)});const initial=new URLSearchParams(location.search).get("q");if(initial){q.value=initial;search(initial)}
+const q=new URLSearchParams(location.search).get("q")||"";
+const target="https://html.duckduckgo.com/html/"+(q?"?q="+encodeURIComponent(q):"");
+location.replace("/api/proxy?url="+encodeURIComponent(target));
 </script>
-</body></html>
+</body>
+</html>
