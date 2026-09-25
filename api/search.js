@@ -10,6 +10,7 @@ module.exports = async (req, res) => {
     .replace(/<script[\\s\\S]*?<\\/script>/gi, " ")
     .replace(/<style[\\s\\S]*?<\\/style>/gi, " ")
     .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&quot;/gi, '"')
     .replace(/&#39;|&#x27;/gi, "'")
@@ -22,7 +23,7 @@ module.exports = async (req, res) => {
 
   const decodeUrl = (value) => {
     try {
-      const absolute = new URL(value, "https://html.duckduckgo.com/");
+      const absolute = new URL(value, "https://duckduckgo.com/");
       const uddg = absolute.searchParams.get("uddg");
       return uddg ? decodeURIComponent(uddg) : absolute.href;
     } catch {
@@ -35,6 +36,9 @@ module.exports = async (req, res) => {
     const cleanTitle = clean(title);
     if (!/^https?:\\/\\//i.test(resultUrl) || !cleanTitle || seen.has(resultUrl)) return;
 
+    // Do not expose DuckDuckGo's own navigation links as search results.
+    if (/^(https?:\\/\\/)?([a-z0-9-]+\\.)*duckduckgo\\.com(\\/|$)/i.test(resultUrl)) return;
+
     seen.add(resultUrl);
     results.push({
       title: cleanTitle,
@@ -43,133 +47,125 @@ module.exports = async (req, res) => {
     });
   };
 
-  const parseHtmlResults = (html) => {
+  const parseResults = (html) => {
     const results = [];
     const seen = new Set();
 
-    const htmlLinks = [...html.matchAll(
-      /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi
+    // Match the result title anchor regardless of HTML attribute order.
+    const anchors = [...html.matchAll(
+      /<a\\b[^>]*class\\s*=\\s*["'][^"']*\\bresult__a\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/a>/gi
     )];
 
-    for (const m of htmlLinks) {
+    for (const match of anchors) {
       if (results.length >= 10) break;
-      const after = html.slice(m.index + m[0].length, m.index + m[0].length + 5000);
-      const snippet = after.match(
-        /class=["'][^"']*result__snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/a>/i
+
+      const tag = match[0];
+      const hrefMatch = tag.match(/\\bhref\\s*=\\s*["']([^"']+)["']/i);
+      if (!hrefMatch) continue;
+
+      const after = html.slice(match.index + tag.length, match.index + tag.length + 3500);
+      const snippetMatch = after.match(
+        /<a\\b[^>]*class\\s*=\\s*["'][^"']*\\bresult__snippet\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/a>/i
       );
-      addResult(results, seen, m[2], m[1], snippet ? snippet[1] : "");
+
+      addResult(results, seen, match[1], hrefMatch[1], snippetMatch ? snippetMatch[1] : "");
     }
 
+    // Lite endpoint fallback.
     if (!results.length) {
-      const liteLinks = [...html.matchAll(
-        /<a[^>]+class=["'][^"']*result-link[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi
+      const lite = [...html.matchAll(
+        /<a\\b[^>]*class\\s*=\\s*["'][^"']*\\bresult-link\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/a>/gi
       )];
 
-      for (const m of liteLinks) {
+      for (const match of lite) {
         if (results.length >= 10) break;
-        const after = html.slice(m.index + m[0].length, m.index + m[0].length + 5000);
-        const snippet = after.match(
-          /class=["'][^"']*result-snippet[^"']*["'][^>]*>([\\s\\S]*?)<\\/[^>]+>/i
+        const hrefMatch = match[0].match(/\\bhref\\s*=\\s*["']([^"']+)["']/i);
+        if (!hrefMatch) continue;
+
+        const after = html.slice(match.index + match[0].length, match.index + match[0].length + 3500);
+        const snippetMatch = after.match(
+          /<[^>]*class\\s*=\\s*["'][^"']*\\bresult-snippet\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/[^>]+>/i
         );
-        addResult(results, seen, m[2], m[1], snippet ? snippet[1] : "");
+
+        addResult(results, seen, match[1], hrefMatch[1], snippetMatch ? snippetMatch[1] : "");
       }
     }
 
     return results;
   };
 
-  const parseJinaMarkdown = (markdown) => {
+  const fetchViaAllOrigins = async () => {
+    const ddgUrl = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q) + "&kl=us-en";
+    const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(ddgUrl);
+
+    const response = await fetch(proxyUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "text/html,application/xhtml+xml"
+      },
+      redirect: "follow"
+    });
+
+    if (!response.ok) throw new Error("AllOrigins HTTP " + response.status);
+
+    const html = await response.text();
+    const results = parseResults(html);
+
+    if (!results.length) {
+      throw new Error("AllOrigins returned no parsed DuckDuckGo results (" + html.length + " bytes)");
+    }
+
+    return results;
+  };
+
+  const fetchViaJina = async () => {
+    const ddgUrl = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q) + "&kl=us-en";
+    const response = await fetch("https://r.jina.ai/" + ddgUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "text/plain,text/markdown;q=0.9,*/*;q=0.8"
+      },
+      redirect: "follow"
+    });
+
+    if (!response.ok) throw new Error("Jina HTTP " + response.status);
+
+    const text = await response.text();
     const results = [];
     const seen = new Set();
 
-    // Jina Reader can return the DDG HTML page as Markdown. DDG result
-    // links are ordinary Markdown links, so keep only real http(s) links.
-    const links = [...markdown.matchAll(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g)];
+    // Jina may turn the DDG result page into Markdown.
+    const links = [...text.matchAll(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g)];
 
     for (const m of links) {
       if (results.length >= 10) break;
-
       const title = clean(m[1]);
       const href = decodeUrl(m[2]);
 
-      // Ignore navigation/utility links that are not actual search results.
-      if (
-        !title ||
-        /^(duckduckgo|privacy|terms|settings|feedback|next|previous|more)$/i.test(title) ||
-        /duckduckgo\\.com/i.test(href)
-      ) {
-        continue;
-      }
-
+      if (!title || /duckduckgo\\.com/i.test(href)) continue;
       addResult(results, seen, title, href, "");
     }
 
+    if (!results.length) throw new Error("Jina returned no parsed results");
     return results;
   };
 
-  const browserHeaders = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache"
-  };
-
   try {
-    // Primary path: have Jina Reader fetch DuckDuckGo's no-JS HTML page.
-    // This avoids Vercel's serverless IP being rejected by DDG directly.
-    const ddgUrl = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
-    const jinaUrl = "https://r.jina.ai/" + ddgUrl;
+    let results;
 
-    const jinaResponse = await fetch(jinaUrl, {
-      method: "GET",
-      headers: {
-        "User-Agent": browserHeaders["User-Agent"],
-        "Accept": "text/plain,text/markdown;q=0.9,*/*;q=0.8",
-        "X-Respond-With": "markdown"
-      },
-      redirect: "follow"
-    });
-
-    if (jinaResponse.ok) {
-      const markdown = await jinaResponse.text();
-      const results = parseJinaMarkdown(markdown);
-
-      if (results.length) {
-        return res.status(200).json({ ok: true, query: q, results });
-      }
-
-      console.error("Jina fetched DDG but no results were parsed. Response length:", markdown.length);
-    } else {
-      console.error("Jina Reader HTTP", jinaResponse.status);
+    // Primary: AllOrigins fetches DuckDuckGo's non-JS results from a
+    // separate network, avoiding Vercel datacenter requests being rejected.
+    try {
+      results = await fetchViaAllOrigins();
+    } catch (allOriginsError) {
+      console.error("AllOrigins DDG search failed:", allOriginsError);
+      results = await fetchViaJina();
     }
 
-    // Fallback: try DDG directly as well.
-    const direct = await fetch(ddgUrl, {
-      method: "GET",
-      headers: {
-        ...browserHeaders,
-        "Referer": "https://html.duckduckgo.com/"
-      },
-      redirect: "follow"
-    });
-
-    if (direct.ok) {
-      const html = await direct.text();
-      const results = parseHtmlResults(html);
-
-      if (results.length) {
-        return res.status(200).json({ ok: true, query: q, results });
-      }
-
-      console.error("Direct DDG returned no parsed results. Response length:", html.length);
-    } else {
-      console.error("Direct DDG HTTP", direct.status);
-    }
-
-    return res.status(502).json({
-      ok: false,
-      error: "DuckDuckGo did not return searchable results."
+    return res.status(200).json({
+      ok: true,
+      query: q,
+      results
     });
   } catch (error) {
     console.error("czX search error:", error);
