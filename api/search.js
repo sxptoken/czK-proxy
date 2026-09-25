@@ -4,54 +4,46 @@ module.exports = async (req, res) => {
   if (!q) return res.status(400).json({ ok:false, error:"Missing search query." });
 
   try {
+    // Fetch DuckDuckGo through a text reader because DuckDuckGo can reject
+    // direct requests from serverless/Vercel IPs.
     const target = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q);
-    const response = await fetch(target, {
-      redirect: "follow",
+    const reader = "https://r.jina.ai/" + target;
+    const response = await fetch(reader, {
       headers: {
-        "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153 Safari/537.36",
-        "Accept":"text/html,application/xhtml+xml"
+        "User-Agent":"czX/1.0",
+        "Accept":"text/plain"
       }
     });
-    if (!response.ok) throw new Error("DuckDuckGo HTTP " + response.status);
 
-    const html = await response.text();
+    if (!response.ok) throw new Error("Search reader HTTP " + response.status);
+
+    const text = await response.text();
     const results = [];
-    const clean = s => s.replace(/<[^>]*>/g," ").replace(/&amp;/g,"&").replace(/&#39;|&#x27;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#x2F;/g,"/").replace(/\s+/g," ").trim();
+    const seen = new Set();
 
-    const blockRegex = /<div[^>]+class=["'][^"']*result[^"']*["'][^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi;
-    let block;
-    while ((block = blockRegex.exec(html)) && results.length < 12) {
-      const part = block[1];
-      const link = part.match(/<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/i);
-      if (!link) continue;
-      let resultUrl = link[1];
-      try {
-        if (resultUrl.startsWith("/l/?")) resultUrl = new URL("https://html.duckduckgo.com" + resultUrl).searchParams.get("uddg") || resultUrl;
-      } catch {}
-      if (!/^https?:\/\//i.test(resultUrl)) continue;
-      const snippetMatch = part.match(/class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\/[^>]+>/i);
-      results.push({title:clean(link[2]),url:resultUrl,snippet:snippetMatch ? clean(snippetMatch[1]) : ""});
+    // Jina normally returns Markdown links for the DuckDuckGo result page.
+    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    let match;
+
+    while ((match = linkRegex.exec(text)) && results.length < 10) {
+      const title = match[1].replace(/\\([_*\[\]()])/g,"$1").trim();
+      const resultUrl = match[2].replace(/&amp;/g,"&");
+      if (!title || !/^https?:\/\//i.test(resultUrl) || seen.has(resultUrl)) continue;
+      if (/duckduckgo\.com/i.test(resultUrl)) continue;
+      seen.add(resultUrl);
+
+      const after = text.slice(linkRegex.lastIndex, linkRegex.lastIndex + 700);
+      const snippet = after.split("\n")[0].replace(/^[-*]\s*/,"").trim();
+
+      results.push({ title, url: resultUrl, snippet });
     }
 
-    // Fallback parser for DuckDuckGo markup variations.
-    if (!results.length) {
-      const linkRegex = /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-      let m;
-      while ((m = linkRegex.exec(html)) && results.length < 12) {
-        let resultUrl = m[1];
-        try {
-          if (resultUrl.startsWith("/l/?")) resultUrl = new URL("https://html.duckduckgo.com" + resultUrl).searchParams.get("uddg") || resultUrl;
-        } catch {}
-        if (!/^https?:\/\//i.test(resultUrl)) continue;
-        const after = html.slice(m.index, m.index + 5000);
-        const sm = after.match(/class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\/[^>]+>/i);
-        results.push({title:clean(m[2]),url:resultUrl,snippet:sm ? clean(sm[1]) : ""});
-      }
-    }
-
-    return res.status(200).json({ok:true,query:q,results});
+    return res.status(200).json({ ok:true, query:q, results });
   } catch (error) {
     console.error("czX search error:", error);
-    return res.status(502).json({ok:false,error:"DuckDuckGo could not be reached from the search backend."});
+    return res.status(502).json({
+      ok:false,
+      error:"DuckDuckGo search could not be reached right now."
+    });
   }
 };
