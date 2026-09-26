@@ -36,7 +36,7 @@ body{margin:0;font-family:Arial,sans-serif;background:#f8f8f8;color:#111}
 <header class="header">
 <a class="logo" href="/youtube.html">czX <span>▶</span></a>
 <form class="search" id="searchForm">
-<input id="searchInput" type="search" placeholder="Search" autocomplete="off">
+<input id="searchInput" type="search" placeholder="Search czX" autocomplete="off">
 <button type="submit" aria-label="Search">⌕</button>
 </form>
 <a class="back" href="/">← czX</a>
@@ -45,8 +45,8 @@ body{margin:0;font-family:Arial,sans-serif;background:#f8f8f8;color:#111}
 <div class="layout">
 <aside class="sidebar">
 <a class="side-link active" href="/youtube.html">⌂ Home</a>
-<a class="side-link" href="https://www.youtube.com/feed/subscriptions">▣ Subscriptions</a>
-<a class="side-link" href="https://www.youtube.com/feed/history">◷ History</a>
+<a class="side-link" href="/youtube.html">▣ Subscriptions</a>
+<a class="side-link" href="/youtube.html">◷ History</a>
 </aside>
 
 <main class="content">
@@ -68,30 +68,92 @@ const grid=document.getElementById("videoGrid");
 const form=document.getElementById("searchForm");
 const input=document.getElementById("searchInput");
 
+function escapeHtml(value){
+ return String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
 function render(list){
- if(!list.length){grid.innerHTML='<div class="empty">No videos found.</div>';return}
- grid.innerHTML=list.map(v=>`
+ if(!list.length){
+   grid.innerHTML='<div class="empty">No results found.</div>';
+   return;
+ }
+ grid.innerHTML=list.map(v=>{
+   const id=escapeHtml(v.id);
+   const title=escapeHtml(v.title);
+   const channel=escapeHtml(v.channel);
+   return `
  <article class="card">
-   <a href="https://www.youtube.com/watch?v=${encodeURIComponent(v.id)}" target="_blank" rel="noopener">
+   <a href="/api/proxy?url=${encodeURIComponent("https://www.youtube.com/watch?v="+v.id)}">
      <img class="thumb" src="https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg" alt="">
    </a>
    <div class="info">
      <div class="avatar">▶</div>
      <div>
-       <p class="title">${v.title}</p>
-       <div class="meta">${v.channel}<br>YouTube</div>
+       <p class="title">${title}</p>
+       <div class="meta">${channel}<br>czX</div>
      </div>
    </div>
- </article>`).join("");
+ </article>`;
+ }).join("");
+}
+
+async function searchSite(q){
+ grid.innerHTML='<div class="empty">Searching czX…</div>';
+ try{
+   const response=await fetch("/api/search?q="+encodeURIComponent(q),{
+     headers:{Accept:"application/json"}
+   });
+   const data=await response.json();
+   if(!response.ok || !data.ok) throw new Error(data.error || "Search failed.");
+   const results=(data.results||[]).filter(item=>item && item.url);
+   if(!results.length){
+     grid.innerHTML='<div class="empty">No results found for “'+escapeHtml(q)+'”.</div>';
+     return;
+   }
+   grid.innerHTML=results.map(item=>{
+     const title=escapeHtml(item.title||item.url);
+     const snippet=escapeHtml(item.snippet||"");
+     const url=String(item.url||"");
+     const proxied="/api/proxy?url="+encodeURIComponent(url);
+     return `
+       <article class="card">
+         <a href="${proxied}">
+           <div class="thumb" style="display:grid;place-items:center;background:#eee;color:#777;font-size:38px">🔎</div>
+         </a>
+         <div class="info">
+           <div class="avatar">🔎</div>
+           <div>
+             <p class="title">${title}</p>
+             <div class="meta">${escapeHtml(url)}<br>${snippet}</div>
+           </div>
+         </div>
+       </article>`;
+   }).join("");
+ }catch(error){
+   grid.innerHTML='<div class="empty">Search failed. Please try again.</div>';
+ }
 }
 
 form.addEventListener("submit",e=>{
  e.preventDefault();
  const q=input.value.trim();
- if(q) location.href="https://www.youtube.com/results?search_query="+encodeURIComponent(q);
+ if(!q){
+   render(videos);
+   return;
+ }
+ history.pushState({q},"","/youtube.html?q="+encodeURIComponent(q));
+ searchSite(q);
 });
 
-render(videos);
+window.addEventListener("popstate",()=>{
+ const q=new URLSearchParams(location.search).get("q")||"";
+ input.value=q;
+ q?searchSite(q):render(videos);
+});
+
+const initialQuery=new URLSearchParams(location.search).get("q")||"";
+input.value=initialQuery;
+initialQuery?searchSite(initialQuery):render(videos);
 </script>
 </body>
 </html>
