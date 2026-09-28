@@ -225,5 +225,7 @@ devModeButton.addEventListener("click",()=>{devPasswordOverlay.hidden=false;devP
     aiButton.addEventListener("click",openAi);closeAi.addEventListener("click",()=>aiOverlay.hidden=true);aiOverlay.addEventListener("click",e=>{if(e.target===aiOverlay)aiOverlay.hidden=true});
     aiForm.addEventListener("submit",async e=>{e.preventDefault();const message=aiInput.value.trim();if(!message)return;addAiMessage(message,"user");aiHistory.push({role:"user",content:message});aiInput.value="";aiInput.disabled=true;aiSend.disabled=true;aiStatus.textContent="Thinking...";try{const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:aiHistory.slice(-12)})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"AI request failed.");addAiMessage(d.reply||"I couldn't generate a response.","assistant");aiHistory.push({role:"assistant",content:d.reply||""});try{await window.incrementCzxAiUses()}catch{}aiStatus.textContent=""}catch(err){addAiMessage(err.message||"Something went wrong.","assistant");aiStatus.textContent="Check the AI setup in Vercel."}finally{aiInput.disabled=false;aiSend.disabled=false;aiInput.focus()}});
   </script>
+<script type="module" src="/announcements.js"></script>
+<script type="module" src="/dev-announcements.js"></script>
 </body>
 </html>
