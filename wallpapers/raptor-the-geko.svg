@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
-<title>Raptor the Geko</title>
-<defs><linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#160b12" stop-opacity=".72"/><stop offset=".23" stop-color="#160b12" stop-opacity=".12"/><stop offset="1" stop-color="#1b0c08" stop-opacity=".15"/></linearGradient><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter></defs>
-<image href="/wallpapers/raptor-the-geko.jpg" x="0" y="0" width="1200" height="1600" preserveAspectRatio="xMidYMid slice"/>
-<rect width="1200" height="1600" fill="url(#shade)"/>
-<text x="600" y="135" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="800" letter-spacing="2" fill="#2a100a" opacity=".8" filter="url(#shadow)">Raptor the Geko</text>
-<text x="600" y="130" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="800" letter-spacing="2" fill="#fff0d4" stroke="#733f27" stroke-width="2" paint-order="stroke">Raptor the Geko</text>
-</svg>
