@@ -101,7 +101,6 @@ function applyFont(font){
   document.documentElement.style.setProperty("--czx-chat-font", '"'+font+'"');
   document.querySelector(".chat-card").style.fontFamily='"'+font+'",sans-serif';
   messages.querySelectorAll(".chat-message").forEach(el=>el.style.fontFamily='"'+font+'",sans-serif');
-  input.style.fontFamily='"'+font+'",sans-serif';
   localStorage.setItem("czxChatFont",font);
   fontOptions.forEach(option=>option.classList.toggle("selected",option.dataset.font===font));
 }
